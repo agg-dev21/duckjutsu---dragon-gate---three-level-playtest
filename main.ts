@@ -33,6 +33,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
             . 1 . b . . . .
             . . . b . . . .
             `, duck, throwSpeed, 0)
+        shuriken.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
     if (level == 3) {
         shuriken = sprites.createProjectileFromSprite(img`
@@ -45,6 +46,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
             . 1 . b . . . .
             . . . b . . . .
             `, duck, 0, -150)
+        shuriken.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`spikes`, function (sprite, location) {
@@ -74,15 +76,15 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Heart, function (sprite, otherSp
 // LEVEL 2: walk into the gate
 scene.onOverlapTile(SpriteKind.Player, assets.tile`gate`, function (sprite, location) {
     level = 2
-    game.splash("Level 2", "Beat the dragon! Press B")
+    game.splash("Level 2", "Jump and press B to hit the dragon!")
     scene.setBackgroundImage(assets.image`dragon sky`)
     tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
     tiles.placeOnTile(duck, tiles.getTileLocation(3, 6))
     bossHealth = 10
     boss = sprites.create(assets.image`dragon`, SpriteKind.Enemy)
-    boss.setPosition(140, 40)
+    boss.setPosition(140, 45)
     boss.vx = 30
-    boss.vy = 30
+    boss.setFlag(SpriteFlag.GhostThroughWalls, true)
     boss.setBounceOnWall(true)
     boss.setStayInScreen(true)
 })
@@ -119,6 +121,7 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
             boss = sprites.create(assets.image`chicken boss`, SpriteKind.Enemy)
             boss.setPosition(80, 25)
             boss.vx = 40
+            boss.setFlag(SpriteFlag.GhostThroughWalls, true)
             boss.setBounceOnWall(true)
             boss.setStayInScreen(true)
         }
@@ -157,7 +160,7 @@ game.onUpdateInterval(1500, function () {
             2 4 5 5 5 4 2 .
             . 2 4 5 4 2 . .
             . . 2 4 2 . . .
-            `, boss, -80, 20)
+            `, boss, randint(-40, 40), 60)
         fireball.setKind(SpriteKind.Fire)
         fireball.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
