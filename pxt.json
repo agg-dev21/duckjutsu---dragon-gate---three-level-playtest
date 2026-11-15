@@ -1,35 +1,20 @@
 {
-    "name": "Duckjutsu - Dragon Gate - Three-Level Playtest",
+    "name": "duck_jutsu",
     "description": "",
     "dependencies": {
         "device": "*",
         "animation": "*",
-        "arcade-background-scroll": "github:microsoft/arcade-background-scroll#v0.1.2",
-        "browser-events": "*"
+        "arcade-background-scroll": "github:microsoft/arcade-background-scroll#v0.1.2"
     },
     "files": [
-        "main.ts",
-        "0-images.g.ts",
-        "0-images.g.jres",
-        "0-tilemap.g.ts",
-        "0-tilemap.g.jres",
-        "1-images.g.ts",
-        "1-images.g.jres",
-        "1-tilemap.g.ts",
-        "1-tilemap.g.jres",
-        "2-images.g.ts",
-        "2-images.g.jres",
-        "2-tilemap.g.ts",
-        "2-tilemap.g.jres",
         "main.blocks",
-        "arena.g.jres",
-        "arena.g.ts",
-        "tilemap.g.jres",
-        "tilemap.g.ts",
+        "main.ts",
+        "README.md",
+        "assets.json",
         "images.g.jres",
         "images.g.ts",
-        "levels.g.jres",
-        "levels.g.ts"
+        "tilemap.g.jres",
+        "tilemap.g.ts"
     ],
     "testFiles": [
         "test.ts"
