@@ -2,6 +2,7 @@ namespace SpriteKind {
     export const Fire = SpriteKind.create()
     export const Cannon = SpriteKind.create()
     export const Scenery = SpriteKind.create()
+    export const Heart = SpriteKind.create()
 }
 // ---------------- title menu ----------------
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -25,6 +26,17 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         }
     } else {
         jump()
+    }
+})
+// letting go of jump early makes a smaller jump
+controller.A.onEvent(ControllerButtonEvent.Released, function () {
+    if (currentLevel > 0 && duck.vy < -90) {
+        duck.vy = -90
+    }
+})
+controller.up.onEvent(ControllerButtonEvent.Released, function () {
+    if (currentLevel > 0 && duck.vy < -90) {
+        duck.vy = -90
     }
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -191,6 +203,7 @@ function hurt () {
         hurtUntil = game.runtime() + 1200
         info.changeLifeBy(-1)
         scene.cameraShake(3, 300)
+        duck.vy = -110
         if (facing == 1) {
             animation.runImageAnimation(duck, assets.animation`duck hurt`, 50, false)
         } else {
@@ -213,6 +226,14 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Fire, function (sprite, otherSpr
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
     hurt()
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    info.changeScoreBy(1)
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Heart, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    info.changeLifeBy(1)
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`checkpoint`, function (sprite, location) {
     checkpoint = location
@@ -248,6 +269,23 @@ function setupParallax (far: Image, near: Image) {
     scroller.setCameraScrollingMultipliers(0.2, 0, scroller.BackgroundLayer.Layer1)
     scroller.setCameraScrollingMultipliers(0.5, 0, scroller.BackgroundLayer.Layer2)
 }
+// every "coin spot" tile becomes a coin
+function placeCoins () {
+    for (let value of tiles.getTilesByType(assets.tile`coin spot`)) {
+        coin = sprites.create(img`
+            . . 4 4 4 4 . .
+            . 4 2 2 2 2 4 .
+            4 2 2 1 2 2 2 4
+            4 2 1 2 2 2 2 4
+            4 2 2 2 2 2 2 4
+            4 2 2 2 2 2 2 4
+            . 4 2 2 2 2 4 .
+            . . 4 4 4 4 . .
+            `, SpriteKind.Food)
+        tiles.placeOnTile(coin, value)
+        tiles.setTileAt(value, assets.tile`transparency16`)
+    }
+}
 function clearLevel () {
     currentLevel = -1
     sprites.destroyAllSpritesOfKind(SpriteKind.Cannon)
@@ -255,6 +293,8 @@ function clearLevel () {
     sprites.destroyAllSpritesOfKind(SpriteKind.Projectile)
     sprites.destroyAllSpritesOfKind(SpriteKind.Scenery)
     sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Food)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Heart)
     sprites.destroyAllSpritesOfKind(SpriteKind.Player)
 }
 function startLevelOne () {
@@ -278,6 +318,7 @@ function startLevelOne () {
         gate.y += -25
         gate.z = -1
     }
+    placeCoins()
     setupDuck()
     currentLevel = 1
     animateDuck()
@@ -305,6 +346,7 @@ function startLevelThree () {
     scene.setBackgroundImage(assets.image`shrinesss bg0`)
     setupParallax(assets.image`back houses`, assets.image`japan house0`)
     tiles.setCurrentTilemap(tilemap`flooded gate`)
+    placeCoins()
     setupDuck()
     hp = 15
     chicken = sprites.create(assets.image`Dragon Gate boss`, SpriteKind.Enemy)
@@ -324,9 +366,20 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     otherSprite.startEffect(effects.fire, 100)
     music.playTone(784, music.beat(BeatFraction.Sixteenth))
     if (currentLevel == 2 && hp == 10) {
-        // second phase: the dragon gets angry and faster
-        dragon.sayText("ROAR!", 1000, false)
-        dragon.follow(duck, 45)
+        // second phase: the dragon gets angry and faster, and a heart drops
+        dragon.sayText("RAAAWR!", 1000, false)
+        scene.cameraShake(4, 500)
+        dragon.follow(duck, 40)
+        heart = sprites.create(img`
+            . e e . e e .
+            e 1 e e e e e
+            e e e e e e e
+            . e e e e e .
+            . . e e e . .
+            . . . e . . .
+            `, SpriteKind.Heart)
+        heart.setPosition(duck.x, 0)
+        heart.ay = 200
     }
     if (hp <= 0) {
         otherSprite.destroy(effects.disintegrate, 500)
@@ -411,6 +464,21 @@ game.onUpdateInterval(1400, function () {
         fire.setFlag(SpriteFlag.DestroyOnWall, true)
         fire.vy = (duck.y - dragon.y) / Math.max(0.5, Math.abs(duck.x - dragon.x) / 75)
         fire.lifespan = 9000
+        if (hp <= 10) {
+            // angry dragon: a second fireball a bit higher
+            fire2 = sprites.createProjectileFromSprite(img`
+                . . 2 4 2 . . .
+                . 2 4 5 4 2 . .
+                2 4 5 5 5 4 2 .
+                . 2 4 5 4 2 . .
+                . . 2 4 2 . . .
+                `, dragon, fireSpeed, 0)
+            fire2.setKind(SpriteKind.Fire)
+            fire2.setFlag(SpriteFlag.AutoDestroy, false)
+            fire2.setFlag(SpriteFlag.DestroyOnWall, true)
+            fire2.vy = fire.vy - 40
+            fire2.lifespan = 9000
+        }
     }
     if (currentLevel == 3 && hp > 0) {
         egg = sprites.createProjectileFromSprite(img`
@@ -427,6 +495,34 @@ game.onUpdateInterval(1400, function () {
         egg.setFlag(SpriteFlag.DestroyOnWall, true)
     }
 })
+// level 3: fish jump out of the water gaps near the duck
+game.onUpdateInterval(1300, function () {
+    if (currentLevel == 3) {
+        for (let value of tiles.getTilesByType(assets.tile`water`)) {
+            if (Math.abs(tiles.locationXY(value, tiles.XY.x) - duck.x) < 80 && Math.percentChance(40)) {
+                fish = sprites.create(img`
+                    . . 4 4 . .
+                    . 4 4 4 4 .
+                    . 4 f 4 4 .
+                    . 4 4 4 4 .
+                    . 4 4 4 4 .
+                    . . 4 4 . .
+                    . 4 . . 4 .
+                    4 4 . . 4 4
+                    `, SpriteKind.Fire)
+                tiles.placeOnTile(fish, value)
+                fish.vy = -210
+                fish.ay = 300
+                fish.setFlag(SpriteFlag.GhostThroughWalls, true)
+                fish.lifespan = 1600
+            }
+        }
+    }
+})
+let fish: Sprite = null
+let fire2: Sprite = null
+let heart: Sprite = null
+let coin: Sprite = null
 let egg: Sprite = null
 let fire: Sprite = null
 let fireSpeed = 0
