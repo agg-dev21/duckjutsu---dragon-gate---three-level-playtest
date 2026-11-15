@@ -1,0 +1,67 @@
+{
+    "name": "Duckjutsu - Dragon Gate - Three-Level Playtest",
+    "description": "",
+    "dependencies": {
+        "device": "*",
+        "animation": "*",
+        "arcade-background-scroll": "github:microsoft/arcade-background-scroll#v0.1.2",
+        "browser-events": "*"
+    },
+    "files": [
+        "main.ts",
+        "0-images.g.ts",
+        "0-images.g.jres",
+        "0-tilemap.g.ts",
+        "0-tilemap.g.jres",
+        "1-images.g.ts",
+        "1-images.g.jres",
+        "1-tilemap.g.ts",
+        "1-tilemap.g.jres",
+        "2-images.g.ts",
+        "2-images.g.jres",
+        "2-tilemap.g.ts",
+        "2-tilemap.g.jres",
+        "main.blocks",
+        "arena.g.jres",
+        "arena.g.ts",
+        "tilemap.g.jres",
+        "tilemap.g.ts",
+        "images.g.jres",
+        "images.g.ts",
+        "crossings.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "branch": "stable4.1",
+        "tag": "v4.1.27",
+        "commits": "https://github.com/microsoft/pxt-arcade/commits/401d844a09f01717919937e218e14e9cea9fa83a",
+        "target": "4.1.27",
+        "pxt": "13.1.24",
+        "targetId": "arcade"
+    },
+    "supportedTargets": [
+        "arcade"
+    ],
+    "preferredEditor": "blocksprj",
+    "palette": [
+        "#000000",
+        "#FFFFFF",
+        "#FFF285",
+        "#FAA27D",
+        "#FF8135",
+        "#4D2412",
+        "#249CA3",
+        "#63507E",
+        "#9096BA",
+        "#D3602B",
+        "#D8682C",
+        "#024A62",
+        "#FFE69B",
+        "#EC5F4C",
+        "#C91F26",
+        "#000000"
+    ],
+    "assetPack": true
+}
