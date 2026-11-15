@@ -260,14 +260,20 @@ function startGame () {
     info.setScore(0)
     startLevelOne()
 }
-// Two picture layers behind the level that move slower than the camera
-function setupParallax (far: Image, near: Image) {
-    scroller.setLayerImage(scroller.BackgroundLayer.Layer1, far)
-    scroller.setLayerImage(scroller.BackgroundLayer.Layer2, near)
+// Four picture layers behind the level. Far layers move slower than near ones.
+function setupParallax (layer1: Image, layer2: Image, layer3: Image, layer4: Image) {
+    scroller.setLayerImage(scroller.BackgroundLayer.Layer1, layer1)
+    scroller.setLayerImage(scroller.BackgroundLayer.Layer2, layer2)
+    scroller.setLayerImage(scroller.BackgroundLayer.Layer3, layer3)
+    scroller.setLayerImage(scroller.BackgroundLayer.Layer4, layer4)
     scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.OnlyHorizontal, scroller.BackgroundLayer.Layer1)
     scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.OnlyHorizontal, scroller.BackgroundLayer.Layer2)
-    scroller.setCameraScrollingMultipliers(0.2, 0, scroller.BackgroundLayer.Layer1)
-    scroller.setCameraScrollingMultipliers(0.5, 0, scroller.BackgroundLayer.Layer2)
+    scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.OnlyHorizontal, scroller.BackgroundLayer.Layer3)
+    scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.OnlyHorizontal, scroller.BackgroundLayer.Layer4)
+    scroller.setCameraScrollingMultipliers(0.1, 0, scroller.BackgroundLayer.Layer1)
+    scroller.setCameraScrollingMultipliers(0.2, 0, scroller.BackgroundLayer.Layer2)
+    scroller.setCameraScrollingMultipliers(0.35, 0, scroller.BackgroundLayer.Layer3)
+    scroller.setCameraScrollingMultipliers(0.5, 0, scroller.BackgroundLayer.Layer4)
 }
 // every "coin spot" tile becomes a coin
 function placeCoins () {
@@ -298,11 +304,11 @@ function clearLevel () {
     sprites.destroyAllSpritesOfKind(SpriteKind.Player)
 }
 function startLevelOne () {
-    game.splash("Level 1: Cannon Pass", "Up/A jumps. Hide from fireworks!")
+    game.splash("Level 1: Rooftops", "Up/A jumps. Hide from fireworks!")
     image.setPalette(hex`000000FFFFFFFFF285FAA27DFF81354D2412249CA363507E9096BAD3602BD8682C024A62FFE69BEC5F4CC91F26000000`)
     setVolume()
     scene.setBackgroundImage(assets.image`cannon pass sky`)
-    setupParallax(assets.image`japan house0`, assets.image`shrine1FR0`)
+    setupParallax(assets.image`city layer`, assets.image`japan house0`, assets.image`shrine1FR0`, assets.image`houses layer`)
     tiles.setCurrentTilemap(tilemap`cannon pass`)
     // every "cannon spot" tile becomes a real cannon
     for (let value of tiles.getTilesByType(assets.tile`cannon spot`)) {
@@ -326,14 +332,14 @@ function startLevelOne () {
 function startLevelTwo () {
     game.splash("Level 2: Dragon Gate", "Press B to throw a shuriken")
     scene.setBackgroundImage(assets.image`dragon gate sky`)
-    setupParallax(assets.image`shrine2FR0`, assets.image`shrine1FR0`)
+    setupParallax(image.create(16, 16), image.create(16, 16), image.create(16, 16), image.create(16, 16))
     tiles.setCurrentTilemap(tilemap`Dragon arena`)
     setupDuck()
     checkpoint = tiles.getTileLocation(3, 6)
     tiles.placeOnTile(duck, checkpoint)
     duck.y += -4
     hp = 20
-    dragon = sprites.create(assets.image`myImage2`, SpriteKind.Enemy)
+    dragon = sprites.create(assets.image`Dragon Gate boss`, SpriteKind.Enemy)
     dragon.setFlag(SpriteFlag.GhostThroughWalls, true)
     dragon.setPosition(560, 50)
     dragon.follow(duck, 25)
@@ -343,15 +349,15 @@ function startLevelTwo () {
 function startLevelThree () {
     game.splash("Level 3: Flooded Gate", "The chicken boss! Throw up with B")
     scene.setBackgroundColor(2)
-    scene.setBackgroundImage(assets.image`shrinesss bg0`)
-    setupParallax(assets.image`back houses`, assets.image`japan house0`)
+    scene.setBackgroundImage(image.create(160, 120))
+    setupParallax(assets.image`shrine2FR0`, image.create(16, 16), image.create(16, 16), image.create(16, 16))
     tiles.setCurrentTilemap(tilemap`flooded gate`)
     placeCoins()
     setupDuck()
     hp = 15
-    chicken = sprites.create(assets.image`Dragon Gate boss`, SpriteKind.Enemy)
+    chicken = sprites.create(assets.image`chicken boss`, SpriteKind.Enemy)
     chicken.setFlag(SpriteFlag.GhostThroughWalls, true)
-    chicken.setPosition(duck.x + 100, 22)
+    chicken.setPosition(duck.x + 100, 28)
     currentLevel = 3
     animateDuck()
 }
@@ -406,19 +412,19 @@ game.onUpdate(function () {
     if (currentLevel == 2) {
         dragon.y = 50 + Math.sin(game.runtime() / 700) * 16
         if (duck.x > dragon.x) {
-            dragon.setImage(assets.image`dragon facing right`)
+            dragon.setImage(assets.image`dragon gate boss facing right`)
         } else {
-            dragon.setImage(assets.image`myImage2`)
+            dragon.setImage(assets.image`Dragon Gate boss`)
         }
     }
     if (currentLevel == 3) {
         // the chicken flies above the duck but never touches the water
         chicken.vx = (duck.x - chicken.x) * 0.8
-        chicken.y = 22 + Math.sin(game.runtime() / 500) * 4
+        chicken.y = 28 + Math.sin(game.runtime() / 500) * 4
         if (duck.x > chicken.x) {
-            chicken.setImage(assets.image`chicken facing right`)
+            chicken.setImage(assets.image`chicken boss facing right`)
         } else {
-            chicken.setImage(assets.image`Dragon Gate boss`)
+            chicken.setImage(assets.image`chicken boss`)
         }
     }
 })
