@@ -499,7 +499,7 @@ game.onUpdateInterval(1400, function () {
 game.onUpdateInterval(1300, function () {
     if (currentLevel == 3) {
         for (let value of tiles.getTilesByType(assets.tile`water`)) {
-            if (Math.abs(tiles.locationXY(value, tiles.XY.x) - duck.x) < 80 && Math.percentChance(40)) {
+            if (Math.percentChance(40)) {
                 fish = sprites.create(img`
                     . . 4 4 . .
                     . 4 4 4 4 .
@@ -515,6 +515,10 @@ game.onUpdateInterval(1300, function () {
                 fish.ay = 300
                 fish.setFlag(SpriteFlag.GhostThroughWalls, true)
                 fish.lifespan = 1600
+                // only keep fish that are near the duck
+                if (Math.abs(fish.x - duck.x) > 80) {
+                    fish.destroy()
+                }
             }
         }
     }
