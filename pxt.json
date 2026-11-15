@@ -28,7 +28,8 @@
         "tilemap.g.ts",
         "images.g.jres",
         "images.g.ts",
-        "crossings.ts"
+        "levels.g.jres",
+        "levels.g.ts"
     ],
     "testFiles": [
         "test.ts"
