@@ -10,6 +10,12 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     throwSpeed = 150
     animation.runImageAnimation(duck, assets.animation`duck walk right`, 100, true)
 })
+controller.left.onEvent(ControllerButtonEvent.Released, function () {
+    animation.runImageAnimation(duck, assets.animation`duck idle left`, 300, true)
+})
+controller.right.onEvent(ControllerButtonEvent.Released, function () {
+    animation.runImageAnimation(duck, assets.animation`duck idle right`, 300, true)
+})
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (duck.isHittingTile(CollisionDirection.Bottom)) {
         duck.vy = -220
@@ -121,18 +127,28 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
 // enemies attack
 game.onUpdateInterval(1500, function () {
     if (level == 1) {
-        firework = sprites.createProjectileFromSprite(img`
-            . . e . e . .
-            . e 4 2 4 e .
-            e 4 2 1 2 4 e
-            . 2 1 1 1 2 .
-            e 4 2 1 2 4 e
-            . e 4 2 4 e .
-            . . e . e . .
-            `, duck, randint(-30, 30), 80)
-        firework.y = 12
-        firework.setKind(SpriteKind.Fire)
-        firework.setFlag(SpriteFlag.GhostThroughWalls, true)
+        // every cannon near the duck shoots a firework up into the air
+        for (let cannonSpot of tiles.getTilesByType(assets.tile`cannon spot`)) {
+            firework = sprites.create(img`
+                . . e . e . .
+                . e 4 2 4 e .
+                e 4 2 1 2 4 e
+                . 2 1 1 1 2 .
+                e 4 2 1 2 4 e
+                . e 4 2 4 e .
+                . . e . e . .
+                `, SpriteKind.Fire)
+            tiles.placeOnTile(firework, cannonSpot)
+            if (Math.abs(firework.x - duck.x) < 150) {
+                firework.vx = -50
+                firework.vy = -150
+                firework.ay = 200
+                firework.setFlag(SpriteFlag.GhostThroughWalls, true)
+                firework.setFlag(SpriteFlag.AutoDestroy, true)
+            } else {
+                firework.destroy()
+            }
+        }
     }
     if (level == 2) {
         fireball = sprites.createProjectileFromSprite(img`
