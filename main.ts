@@ -151,14 +151,14 @@ function makeDuck () {
     scene.cameraFollowSprite(duck)
     facing = 1
     animation.runImageAnimation(duck, assets.animation`duck idle`, 300, true)
-    for (let value of tiles.getTilesByType(assets.tile`start`)) {
-        tiles.placeOnTile(duck, value)
-        tiles.setTileAt(value, assets.tile`transparency16`)
-        checkpoint = value
+    for (let spot of tiles.getTilesByType(assets.tile`start`)) {
+        tiles.placeOnTile(duck, spot)
+        tiles.setTileAt(spot, assets.tile`transparency16`)
+        checkpoint = spot
     }
 }
 function makeCoins () {
-    for (let value of tiles.getTilesByType(assets.tile`coin spot`)) {
+    for (let spot of tiles.getTilesByType(assets.tile`coin spot`)) {
         coin = sprites.create(img`
             . . 4 4 4 4 . .
             . 4 2 2 2 2 4 .
@@ -169,8 +169,8 @@ function makeCoins () {
             . 4 2 2 2 2 4 .
             . . 4 4 4 4 . .
             `, SpriteKind.Food)
-        tiles.placeOnTile(coin, value)
-        tiles.setTileAt(value, assets.tile`transparency16`)
+        tiles.placeOnTile(coin, spot)
+        tiles.setTileAt(spot, assets.tile`transparency16`)
     }
 }
 function startLevel1 () {
@@ -191,14 +191,14 @@ function startLevel1 () {
     scroller.setCameraScrollingMultipliers(0.35, 0, scroller.BackgroundLayer.Layer3)
     scroller.setCameraScrollingMultipliers(0.5, 0, scroller.BackgroundLayer.Layer4)
     tiles.setCurrentTilemap(tilemap`cannon pass`)
-    for (let value of tiles.getTilesByType(assets.tile`cannon spot`)) {
+    for (let spot of tiles.getTilesByType(assets.tile`cannon spot`)) {
         cannon = sprites.create(assets.image`cannon`, SpriteKind.Cannon)
-        tiles.placeOnTile(cannon, value)
-        tiles.setTileAt(value, assets.tile`transparency16`)
+        tiles.placeOnTile(cannon, spot)
+        tiles.setTileAt(spot, assets.tile`transparency16`)
     }
-    for (let value of tiles.getTilesByType(assets.tile`gate`)) {
+    for (let spot of tiles.getTilesByType(assets.tile`gate`)) {
         gate = sprites.create(assets.image`torii gate`, SpriteKind.Gate)
-        tiles.placeOnTile(gate, value)
+        tiles.placeOnTile(gate, spot)
         gate.y += -25
         gate.z = -1
     }
@@ -255,8 +255,8 @@ game.onUpdate(function () {
 // level 1: every cannon shoots a firework towards the duck
 game.onUpdateInterval(1300, function () {
     if (level == 1) {
-        for (let value of sprites.allOfKind(SpriteKind.Cannon)) {
-            if (Math.abs(value.x - duck.x) < 150) {
+        for (let oneCannon of sprites.allOfKind(SpriteKind.Cannon)) {
+            if (Math.abs(oneCannon.x - duck.x) < 150) {
                 firework = sprites.createProjectileFromSprite(img`
                     . . e . e . .
                     . e 4 2 4 e .
@@ -265,7 +265,7 @@ game.onUpdateInterval(1300, function () {
                     e 4 2 1 2 4 e
                     . e 4 2 4 e .
                     . . e . e . .
-                    `, value, (duck.x - value.x) * 0.8, -130)
+                    `, oneCannon, (duck.x - oneCannon.x) * 0.8, -130)
                 firework.ay = 220
                 firework.setKind(SpriteKind.Fire)
                 firework.setFlag(SpriteFlag.DestroyOnWall, true)
