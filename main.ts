@@ -27,19 +27,29 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         . . . b . . . .
         `, duck, throwSpeed, 0)
     shuriken.setFlag(SpriteFlag.GhostThroughWalls, true)
+    music.pewPew.play()
 })
-// ===== COINS AND DANGER =====
+// ===== COINS =====
 scene.onOverlapTile(SpriteKind.Player, assets.tile`coin`, function (sprite, location) {
     info.changeScoreBy(1)
     tiles.setTileAt(location, assets.tile`transparency16`)
+    music.baDing.play()
 })
+// ===== GETTING HURT (then 1 second where you can't be hurt) =====
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Fire, function (sprite, otherSprite) {
     otherSprite.destroy()
-    info.changeLifeBy(-1)
+    if (game.runtime() > safeTime) {
+        info.changeLifeBy(-1)
+        safeTime = game.runtime() + 1000
+        scene.cameraShake(4, 300)
+    }
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
-    info.changeLifeBy(-1)
-    pause(1000)
+    if (game.runtime() > safeTime) {
+        info.changeLifeBy(-1)
+        safeTime = game.runtime() + 1000
+        scene.cameraShake(4, 300)
+    }
 })
 // fell off the map (or into the water in level 3)
 game.onUpdate(function () {
@@ -51,13 +61,15 @@ game.onUpdate(function () {
 // ===== LEVEL 2: walk into the gate =====
 scene.onOverlapTile(SpriteKind.Player, assets.tile`gate`, function (sprite, location) {
     level = 2
+    sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
     game.splash("Level 2", "Jump over the dragon. B throws!")
     scene.setBackgroundImage(assets.image`level 2 background`)
     tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
     startSpot = tiles.getTileLocation(3, 6)
     tiles.placeOnTile(duck, startSpot)
     boss = sprites.create(assets.image`dragon`, SpriteKind.Enemy)
-    tiles.placeOnTile(boss, tiles.getTileLocation(28, 5))
+    tiles.placeOnTile(boss, tiles.getTileLocation(28, 6))
+    boss.ay = 500
     boss.vx = -30
     boss.setBounceOnWall(true)
     bossHealth = 10
@@ -66,9 +78,13 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`gate`, function (sprite, loca
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
     sprite.destroy()
     bossHealth += -1
+    otherSprite.sayText(bossHealth, 500, false)
+    music.smallCrash.play()
     if (bossHealth == 0) {
-        otherSprite.destroy()
+        otherSprite.destroy(effects.fire, 500)
+        sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
         if (level == 3) {
+            game.splash("You saved the village!")
             game.over(true)
         }
         // ===== LEVEL 3: upside down over the water =====
@@ -101,7 +117,12 @@ game.onUpdateInterval(1500, function () {
             firework.lifespan = 2000
         }
     } else {
+        // the boss throws a fireball at the duck's height, towards the duck
         fireball = sprites.createProjectileFromSprite(assets.image`fireball`, boss, -80, 0)
+        if (duck.x > boss.x) {
+            fireball.vx = 80
+        }
+        fireball.y = duck.y
         fireball.setKind(SpriteKind.Fire)
         fireball.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
@@ -110,6 +131,7 @@ let fireball: Sprite = null
 let firework: Sprite = null
 let bossHealth = 0
 let boss: Sprite = null
+let safeTime = 0
 let shuriken: Sprite = null
 let startSpot: tiles.Location = null
 let throwSpeed = 0
