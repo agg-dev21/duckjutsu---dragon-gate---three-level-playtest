@@ -11,7 +11,12 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     animation.runImageAnimation(duck, walkRight, 100, true)
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (duck.isHittingTile(CollisionDirection.Bottom) || duck.isHittingTile(CollisionDirection.Top)) {
+    // jump only when standing (in level 3 the duck stands on the ceiling)
+    if (level == 3) {
+        if (duck.isHittingTile(CollisionDirection.Top)) {
+            duck.vy = jumpSpeed
+        }
+    } else if (duck.isHittingTile(CollisionDirection.Bottom)) {
         duck.vy = jumpSpeed
     }
 })
