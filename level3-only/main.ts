@@ -80,6 +80,7 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
             jumpSpeed = 250
             walkLeft = assets.animation`duck walk left upside down`
             walkRight = assets.animation`duck walk right upside down`
+animation.runImageAnimation(duck, walkRight, 100, true)
             water = sprites.create(assets.image`water waves`, SpriteKind.Water)
             water.setFlag(SpriteFlag.RelativeToCamera, true)
             water.y = 100
