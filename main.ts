@@ -65,10 +65,10 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`gate`, function (sprite, loca
     game.splash("Level 2", "Jump over the dragon. B throws!")
     scene.setBackgroundImage(assets.image`level 2 background`)
     tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
-    startSpot = tiles.getTileLocation(3, 6)
+    startSpot = tiles.getTileLocation(3, 5)
     tiles.placeOnTile(duck, startSpot)
     boss = sprites.create(assets.image`dragon`, SpriteKind.Enemy)
-    tiles.placeOnTile(boss, tiles.getTileLocation(28, 6))
+    tiles.placeOnTile(boss, tiles.getTileLocation(28, 5))
     boss.ay = 500
     boss.vx = -30
     boss.setBounceOnWall(true)
@@ -92,7 +92,7 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
         game.splash("Level 3", "Upside down! Don't fall in the water")
         scene.setBackgroundImage(assets.image`level 3 background`)
         tiles.setCurrentTilemap(tilemap`level 3 flooded gate`)
-        startSpot = tiles.getTileLocation(2, 1)
+        startSpot = tiles.getTileLocation(2, 2)
         tiles.placeOnTile(duck, startSpot)
         duck.ay = -600
         jumpSpeed = 250
@@ -155,5 +155,5 @@ duck = sprites.create(assets.image`duck`, SpriteKind.Player)
 controller.moveSprite(duck, 80, 0)
 duck.ay = 600
 scene.cameraFollowSprite(duck)
-startSpot = tiles.getTileLocation(2, 6)
+startSpot = tiles.getTileLocation(2, 5)
 tiles.placeOnTile(duck, startSpot)
