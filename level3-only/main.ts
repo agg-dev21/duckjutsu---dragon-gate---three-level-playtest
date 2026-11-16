@@ -21,28 +21,44 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 controller.left.onEvent(ControllerButtonEvent.Released, function () {
-    if (level == 3) {
-        animation.runImageAnimation(duck, assets.animation`duck idle left upside down`, 300, true)
+    if (controller.right.isPressed()) {
+        if (level == 3) {
+            animation.runImageAnimation(duck, assets.animation`duck walk right upside down`, 100, true)
+        } else {
+            animation.runImageAnimation(duck, assets.animation`duck walk right`, 100, true)
+        }
     } else {
-        animation.runImageAnimation(duck, assets.animation`duck idle left`, 300, true)
+        if (level == 3) {
+            animation.runImageAnimation(duck, assets.animation`duck idle left upside down`, 300, true)
+        } else {
+            animation.runImageAnimation(duck, assets.animation`duck idle left`, 300, true)
+        }
     }
 })
 controller.right.onEvent(ControllerButtonEvent.Released, function () {
-    if (level == 3) {
-        animation.runImageAnimation(duck, assets.animation`duck idle right upside down`, 300, true)
+    if (controller.left.isPressed()) {
+        if (level == 3) {
+            animation.runImageAnimation(duck, assets.animation`duck walk left upside down`, 100, true)
+        } else {
+            animation.runImageAnimation(duck, assets.animation`duck walk left`, 100, true)
+        }
     } else {
-        animation.runImageAnimation(duck, assets.animation`duck idle right`, 300, true)
+        if (level == 3) {
+            animation.runImageAnimation(duck, assets.animation`duck idle right upside down`, 300, true)
+        } else {
+            animation.runImageAnimation(duck, assets.animation`duck idle right`, 300, true)
+        }
     }
 })
 // jumping (in level 3 you jump down, away from the ceiling)
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (level == 3) {
         if (duck.isHittingTile(CollisionDirection.Top)) {
-            duck.vy = 200
+            duck.vy = 250
         }
     } else {
         if (duck.isHittingTile(CollisionDirection.Bottom)) {
-            duck.vy = -220
+            duck.vy = -260
         }
     }
 })
@@ -85,17 +101,15 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Heart, function (sprite, otherSp
 // LEVEL 2: walk into the gate
 scene.onOverlapTile(SpriteKind.Player, assets.tile`gate`, function (sprite, location) {
     level = 2
-    game.splash("Level 2", "Jump and press B to hit the dragon!")
+    game.splash("Level 2", "Jump over the dragon, B (or X key) throws")
     scene.setBackgroundImage(assets.image`dragon sky`)
     tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
     tiles.placeOnTile(duck, tiles.getTileLocation(3, 6))
     bossHealth = 10
     boss = sprites.create(assets.image`dragon`, SpriteKind.Enemy)
-    boss.setPosition(140, 45)
-    boss.vx = 30
+    boss.setPosition(560, 97)
+    boss.vx = -30
     boss.setFlag(SpriteFlag.GhostThroughWalls, true)
-    boss.setBounceOnWall(true)
-    boss.setStayInScreen(true)
 })
 // hit the boss with a shuriken
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
@@ -126,7 +140,7 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
             scene.setBackgroundImage(assets.image`level 3 background`)
             tiles.setCurrentTilemap(tilemap`level 3 flooded gate`)
             tiles.placeOnRandomTile(duck, assets.tile`start`)
-            duck.ay = -400
+            duck.ay = -600
             animation.runImageAnimation(duck, assets.animation`duck idle right upside down`, 300, true)
             water = sprites.create(assets.image`water waves`, SpriteKind.Water)
             water.setFlag(SpriteFlag.RelativeToCamera, true)
@@ -140,8 +154,17 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
         }
     }
 })
-// level 3: falling down into the water
 game.onUpdate(function () {
+    // level 2: the dragon walks back and forth across the arena
+    if (level == 2) {
+        if (boss.x < 40) {
+            boss.vx = 30
+        }
+        if (boss.x > 600) {
+            boss.vx = -30
+        }
+    }
+    // level 3: falling down into the water
     if (level == 3) {
         if (duck.y > 95) {
             info.changeLifeBy(-1)
@@ -182,7 +205,10 @@ game.onUpdateInterval(1500, function () {
             2 4 5 5 5 4 2 .
             . 2 4 5 4 2 . .
             . . 2 4 2 . . .
-            `, boss, randint(-40, 40), 60)
+            `, boss, -80, 0)
+        if (duck.x > boss.x) {
+            fireball.vx = 80
+        }
         fireball.setKind(SpriteKind.Fire)
         fireball.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
@@ -225,7 +251,7 @@ duck = sprites.create(assets.image`duck`, SpriteKind.Player)
 controller.moveSprite(duck, 80, 0)
 scene.cameraFollowSprite(duck)
 tiles.placeOnRandomTile(duck, assets.tile`start`)
-duck.ay = -400
+duck.ay = -600
 animation.runImageAnimation(duck, assets.animation`duck idle right upside down`, 300, true)
 water = sprites.create(assets.image`water waves`, SpriteKind.Water)
 water.setFlag(SpriteFlag.RelativeToCamera, true)
