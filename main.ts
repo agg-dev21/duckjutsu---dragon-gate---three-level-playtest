@@ -46,14 +46,14 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Fire, function (sprite, otherSpr
     if (game.runtime() > safeTime) {
         info.changeLifeBy(-1)
         safeTime = game.runtime() + 1000
-        scene.cameraShake(4, 300)
+        scene.cameraShake(2, 200)
     }
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
     if (game.runtime() > safeTime) {
         info.changeLifeBy(-1)
         safeTime = game.runtime() + 1000
-        scene.cameraShake(4, 300)
+        scene.cameraShake(2, 200)
     }
 })
 // out of lives: try the same level again
@@ -118,20 +118,28 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     }
 })
 // ===== ENEMIES ATTACK =====
+// level 1: only the cannons near the duck shoot fireworks
 game.onUpdateInterval(1500, function () {
     if (level == 1) {
         for (let cannonSpot of tiles.getTilesByType(assets.tile`cannon spot`)) {
             firework = sprites.create(assets.image`firework`, SpriteKind.Fire)
             tiles.placeOnTile(firework, cannonSpot)
-            firework.setVelocity(-50, -150)
-            firework.ay = 200
-            firework.lifespan = 2000
+            if (Math.abs(firework.x - duck.x) < 150) {
+                firework.setVelocity(-50, -150)
+                firework.ay = 200
+                firework.lifespan = 2000
+            } else {
+                firework.destroy()
+            }
         }
-    } else {
-        // the boss throws a fireball at the duck's height, towards the duck
-        fireball = sprites.createProjectileFromSprite(assets.image`fireball`, boss, -80, 0)
+    }
+})
+// level 2 and 3: the boss throws a slow fireball at the duck every 2.5 seconds
+game.onUpdateInterval(2500, function () {
+    if (level >= 2) {
+        fireball = sprites.createProjectileFromSprite(assets.image`fireball`, boss, -50, 0)
         if (duck.x > boss.x) {
-            fireball.vx = 80
+            fireball.vx = 50
         }
         fireball.y = duck.y
         fireball.setKind(SpriteKind.Fire)
