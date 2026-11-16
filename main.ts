@@ -51,6 +51,12 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         scene.cameraShake(4, 300)
     }
 })
+// out of lives: try the same level again
+info.onLifeZero(function () {
+    game.splash("Try again!")
+    info.setLife(5)
+    tiles.placeOnTile(duck, startSpot)
+})
 // fell off the map (or into the water in level 3)
 game.onUpdate(function () {
     if (duck.y > 105 || level == 3 && duck.y > 95) {
