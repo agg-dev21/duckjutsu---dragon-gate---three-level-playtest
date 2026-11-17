@@ -6,6 +6,8 @@ A 3-level ninja duck platformer made in MakeCode Arcade (Blocks).
 2. **Dragon Gate** – jump over the dragon and throw shurikens until it falls.
 3. **Flooded Gate** – you are upside down under a ceiling; beat the chicken boss and don't fall in the water.
 
+The game opens on a **start menu** (START / SETTINGS / QUIT). Up/down move the arrow, A picks. SETTINGS turns the sound on or off.
+
 Controls: arrows move, **A / Space** jumps, **B / X** throws a shuriken. Running out of lives restarts the level you are on.
 
 > Open this page at [https://agg-dev21.github.io/duckjutsu---dragon-gate---three-level-playtest/](https://agg-dev21.github.io/duckjutsu---dragon-gate---three-level-playtest/)
@@ -20,19 +22,19 @@ Everything below is done in the MakeCode editor, in **Blocks** and the **Assets*
 | Thing | Where to change it |
 |---|---|
 | Level layouts | Assets tab → **Tile Maps**: `level 1 rooftops`, `level 2 dragon arena`, `level 3 flooded gate` |
-| Floor and wall tiles | `roof`, `stone`, `ceiling` (these are walls you can stand on) |
-| Special tiles | `coin` (pick-up), `cannon spot` (a cannon that shoots fireworks), `gate` (walk in to reach level 2) |
-| Characters and pictures | Assets tab → **Images**: `duck`, `dragon`, `chicken boss`, `firework`, `fireball`, the 3 backgrounds, `title screen` |
+| Floor and wall tiles | `lvl1tile0`, `lvl2 tile`, `lvl3 tile 3`, `lvl3 tile 4` (painted as walls you can stand on) |
+| Special tiles | `coin0` (pick-up), `cannon spot` (a cannon that shoots fireworks), `gate0` (walk in to reach level 2), `spikes0` (standing on it hurts) |
+| Characters and pictures | Assets tab → **Images**: `duck0`, `dragon0`, `chicken boss`, `C1` (fireball), `C2` (firework), `C3` (egg), `Random` (shuriken), `heart`, `water waves`, the 3 backgrounds, `start menu` |
 | Duck animations | Assets tab → **Animations**: `duck walk right/left` (+ the `upside down` versions for level 3) |
 | Code | Blocks: one group per job (controls, coins, getting hurt, level 2, hit the boss, enemies attack, level 1 start) |
 
 ### Change a level
 Open its tile map and paint. No code needed:
-* Paint **`coin`** tiles where you want coins.
+* Paint **`coin0`** tiles where you want coins.
 * Paint **`cannon spot`** tiles in level 1 for more cannons.
 * Leave holes in the floor for pits (falling in costs a life).
-* **Keep gaps at least 2 tiles tall.** The duck is 20px tall and a tile is 16px, so it gets wedged in a 1-tile-high gap.
-* The duck starts at column 2, row 5 (level 1), column 3, row 5 (level 2) and column 2, row 2 (level 3). Those are the `startSpot` blocks; keep those tiles empty.
+* **Keep gaps at least 2 tiles tall.** The duck is 22px tall and a tile is 16px, so it gets wedged in a 1-tile-high gap.
+* The duck starts at column 1, row 5 (level 1), column 2, row 5 (level 2) and column 2, row 2 (level 3). Those are the `startSpot` blocks; keep those tiles empty.
 
 ### Add a new enemy (copy the boss pattern)
 1. Make or import its picture (see below).
