@@ -159,12 +159,13 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`gate0`, function (sprite, loc
         startSpot = tiles.getTileLocation(2, 4)
         tiles.placeOnTile(duck, startSpot)
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
-        // the dragon walks on the floor and turns around at the steps
-        boss.setPosition(480, 88)
-        boss.vx = -30
-        boss.setBounceOnWall(true)
-        bossHealth = 10
-        game.splash("Level 2", "Use the steps and roofs. B throws!")
+        // the dragon walks on the floor, turns at the steps and sometimes jumps
+        boss.setPosition(480, 80)
+        boss.ay = 500
+        bossSpeed = 45
+        boss.vx = 0 - bossSpeed
+        bossHealth = 15
+        game.splash("Level 2", "Climb the roofs, dodge the dragon. B throws!")
     }
 })
 // ===== LEVEL 3: upside down over the water =====
@@ -184,9 +185,9 @@ function startLevel3 () {
     boss = sprites.create(assets.image`chicken boss`, SpriteKind.Enemy)
     tiles.placeOnTile(boss, tiles.getTileLocation(24, 2))
     boss.ay = -400
-    boss.vx = 40
-    boss.setBounceOnWall(true)
-    bossHealth = 10
+    bossSpeed = 55
+    boss.vx = bossSpeed
+    bossHealth = 15
     game.splash("Level 3", "Upside down! Don't fall in the water")
 }
 // ===== HIT THE BOSS =====
@@ -195,7 +196,12 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     bossHealth += -1
     otherSprite.startEffect(effects.fire, 200)
     music.smallCrash.play()
-    // halfway: the boss drops a heart
+    // under half health: the boss gets angry and faster
+    if (bossHealth == 7) {
+        bossSpeed = bossSpeed + 20
+        otherSprite.sayText("GRR!", 1000, false)
+    }
+    // the boss drops a heart
     if (bossHealth == 5) {
         heart = sprites.create(assets.image`heart`, SpriteKind.Heart)
         if (level == 2) {
@@ -221,6 +227,15 @@ game.onUpdate(function () {
         if (duck.isHittingTile(CollisionDirection.Bottom) && duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
             hurt()
             duck.vy = -150
+        }
+    }
+    // boss levels: turn around when the boss hits a wall
+    if (level >= 2) {
+        if (boss.isHittingTile(CollisionDirection.Left)) {
+            boss.vx = bossSpeed
+        }
+        if (boss.isHittingTile(CollisionDirection.Right)) {
+            boss.vx = 0 - bossSpeed
         }
     }
     // level 3: falling into the water
@@ -254,6 +269,8 @@ game.onUpdateInterval(1500, function () {
         if (duck.x > boss.x) {
             fireball.vx = 80
         }
+        // aim up or down at the duck
+        fireball.vy = duck.y - boss.y
         fireball.setKind(SpriteKind.Fire)
         fireball.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
@@ -263,10 +280,25 @@ game.onUpdateInterval(1500, function () {
         if (duck.x < boss.x) {
             egg.vx = -80
         }
+        egg.vy = duck.y - boss.y
         egg.setKind(SpriteKind.Fire)
         egg.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
 })
+// every 3 seconds: the dragon jumps, the chicken dives down at you
+game.onUpdateInterval(3000, function () {
+    if (level == 2) {
+        if (boss.isHittingTile(CollisionDirection.Bottom)) {
+            boss.vy = -220
+        }
+    }
+    if (level == 3) {
+        if (boss.isHittingTile(CollisionDirection.Top)) {
+            boss.vy = 200
+        }
+    }
+})
+let bossSpeed = 0
 let egg: Sprite = null
 let fireball: Sprite = null
 let firework: Sprite = null
