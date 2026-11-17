@@ -135,7 +135,8 @@ function startLevel1 () {
     for (let spot of tiles.getTilesByType(assets.tile`cannon spot`)) {
         cannon = sprites.create(assets.image`cannon`, SpriteKind.Cannon)
         tiles.placeOnTile(cannon, spot)
-        cannon.y += -3
+        // gravity makes the cannon sit on the roof under it
+        cannon.ay = 300
         tiles.setTileAt(spot, assets.tile`transparency16`)
     }
     duck = sprites.create(assets.image`duck0`, SpriteKind.Player)
