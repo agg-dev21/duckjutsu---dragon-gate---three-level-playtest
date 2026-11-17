@@ -50,10 +50,11 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         }
     } else if (level == 3) {
         // level 3: the duck stands on the ceiling, so it jumps down
-        if (duck.isHittingTile(CollisionDirection.Top)) {
+        // (vy is 0 when standing still, which catches the times the tile check misses)
+        if (duck.isHittingTile(CollisionDirection.Top) || duck.vy == 0) {
             duck.vy = 250
         }
-    } else if (duck.isHittingTile(CollisionDirection.Bottom)) {
+    } else if (duck.isHittingTile(CollisionDirection.Bottom) || duck.vy == 0) {
         duck.vy = -260
     }
 })
@@ -178,6 +179,7 @@ function startLevel3 () {
     duck.ay = -600
     walkLeft = assets.animation`duck walk left upside down`
     walkRight = assets.animation`duck walk right upside down`
+    animation.stopAnimation(animation.AnimationTypes.All, duck)
     duck.setImage(walkRight[0])
     boss = sprites.create(assets.image`chicken boss`, SpriteKind.Enemy)
     tiles.placeOnTile(boss, tiles.getTileLocation(24, 2))
@@ -196,7 +198,11 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     // halfway: the boss drops a heart
     if (bossHealth == 5) {
         heart = sprites.create(assets.image`heart`, SpriteKind.Heart)
-        heart.setPosition(otherSprite.x, otherSprite.y)
+        if (level == 2) {
+            heart.setPosition(otherSprite.x, otherSprite.y - 40)
+        } else {
+            heart.setPosition(otherSprite.x, otherSprite.y + 30)
+        }
     }
     if (bossHealth == 0) {
         otherSprite.destroy()
@@ -212,7 +218,7 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
 game.onUpdate(function () {
     // level 1: standing on spikes hurts and bounces you up
     if (level == 1) {
-        if (duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
+        if (duck.isHittingTile(CollisionDirection.Bottom) && duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
             hurt()
             duck.vy = -150
         }
