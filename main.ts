@@ -154,14 +154,15 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`gate0`, function (sprite, loc
         sprites.destroyAllSpritesOfKind(SpriteKind.Cannon)
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
-        startSpot = tiles.getTileLocation(2, 5)
+        startSpot = tiles.getTileLocation(2, 4)
         tiles.placeOnTile(duck, startSpot)
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
-        boss.setPosition(560, 88)
+        // the dragon walks on the floor and turns around at the steps
+        boss.setPosition(480, 88)
         boss.vx = -30
-        boss.setFlag(SpriteFlag.GhostThroughWalls, true)
+        boss.setBounceOnWall(true)
         bossHealth = 10
-        game.splash("Level 2", "Jump over the dragon. B throws!")
+        game.splash("Level 2", "Use the steps and roofs. B throws!")
     }
 })
 // ===== LEVEL 3: upside down over the water =====
@@ -213,15 +214,6 @@ game.onUpdate(function () {
         if (duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
             hurt()
             duck.vy = -150
-        }
-    }
-    // level 2: the dragon walks back and forth across the arena
-    if (level == 2) {
-        if (boss.x < 40) {
-            boss.vx = 30
-        }
-        if (boss.x > 600) {
-            boss.vx = -30
         }
     }
     // level 3: falling into the water
