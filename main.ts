@@ -156,16 +156,16 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`gate0`, function (sprite, loc
         sprites.destroyAllSpritesOfKind(SpriteKind.Cannon)
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
-        startSpot = tiles.getTileLocation(2, 4)
+        startSpot = tiles.getTileLocation(2, 3)
         tiles.placeOnTile(duck, startSpot)
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
-        // the dragon walks on the floor, turns at the steps and sometimes jumps
-        boss.setPosition(480, 80)
+        // the dragon walks over the hills and sometimes jumps
+        boss.setPosition(410, 50)
         boss.ay = 500
         bossSpeed = 45
-        boss.vx = 0 - bossSpeed
+        bossDirection = -1
         bossHealth = 15
-        game.splash("Level 2", "Climb the roofs, dodge the dragon. B throws!")
+        game.splash("Level 2", "The dragon climbs too! B throws!")
     }
 })
 // ===== LEVEL 3: upside down over the water =====
@@ -186,7 +186,7 @@ function startLevel3 () {
     tiles.placeOnTile(boss, tiles.getTileLocation(24, 2))
     boss.ay = -400
     bossSpeed = 55
-    boss.vx = bossSpeed
+    bossDirection = 1
     bossHealth = 15
     game.splash("Level 3", "Upside down! Don't fall in the water")
 }
@@ -229,14 +229,30 @@ game.onUpdate(function () {
             duck.vy = -150
         }
     }
-    // boss levels: turn around when the boss hits a wall
-    if (level >= 2) {
+    // level 2: the dragon jumps up onto hills it walks into,
+    // and turns around at the two ends of the arena
+    if (level == 2) {
+        if (boss.isHittingTile(CollisionDirection.Bottom) && (boss.isHittingTile(CollisionDirection.Left) || boss.isHittingTile(CollisionDirection.Right))) {
+            boss.vy = -260
+        }
+        if (boss.x < 60) {
+            bossDirection = 1
+        }
+        if (boss.x > 580) {
+            bossDirection = -1
+        }
+        // keep walking (bumping a hill stops it, so set the speed every frame)
+        boss.vx = bossSpeed * bossDirection
+    }
+    // level 3: the chicken turns around when it hits a wall
+    if (level == 3) {
         if (boss.isHittingTile(CollisionDirection.Left)) {
-            boss.vx = bossSpeed
+            bossDirection = 1
         }
         if (boss.isHittingTile(CollisionDirection.Right)) {
-            boss.vx = 0 - bossSpeed
+            bossDirection = -1
         }
+        boss.vx = bossSpeed * bossDirection
     }
     // level 3: falling into the water
     if (level == 3) {
@@ -299,6 +315,7 @@ game.onUpdateInterval(3000, function () {
     }
 })
 let bossSpeed = 0
+let bossDirection = 0
 let egg: Sprite = null
 let fireball: Sprite = null
 let firework: Sprite = null
