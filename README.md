@@ -2,9 +2,9 @@
 
 A 3-level ninja duck platformer made in MakeCode Arcade (Blocks).
 
-1. **Rooftops** – jump across the rooftops, dodge the cannon fireworks, grab coins, reach the gate.
-2. **Dragon Gate** – jump over the dragon and throw shurikens until it falls.
-3. **Flooded Gate** – you are upside down under a ceiling; beat the chicken boss and don't fall in the water.
+1. **Rooftops** - jump across the rooftops, dodge the cannon fireworks, grab coins, reach the gate.
+2. **Dragon Gate** - jump over the dragon and throw shurikens until it falls.
+3. **Flooded Gate** - you are upside down under a ceiling; beat the chicken boss and don't fall in the water.
 
 The game opens on a **start menu** (START / SETTINGS / QUIT). Up/down move the arrow, A picks. SETTINGS turns the sound on or off.
 
@@ -21,17 +21,17 @@ Everything below is done in the MakeCode editor, in **Blocks** and the **Assets*
 ### Where things are
 | Thing | Where to change it |
 |---|---|
-| Level layouts | Assets tab → **Tile Maps**: `level 1 rooftops`, `level 2 dragon arena`, `level 3 flooded gate` |
+| Level layouts | Assets tab -> **Tile Maps**: `level 1 rooftops`, `level 2 dragon arena`, `level 3 flooded gate` |
 | Floor and wall tiles | `lvl1tile0`, `lvl2 tile`, `lvl3 tile 3`, `lvl3 tile 4` (painted as walls you can stand on) |
 | Special tiles | `coin0` (pick-up), `cannon spot` (a cannon that shoots fireworks), `gate0` (walk in to reach level 2), `spikes0` (standing on it hurts) |
-| Characters and pictures | Assets tab → **Images**: `duck0`, `dragon0`, `chicken boss`, `C1` (fireball), `C2` (firework), `C3` (egg), `Random` (shuriken), `heart`, `water waves`, the 3 backgrounds, `start menu` |
-| Duck animations | Assets tab → **Animations**: `duck walk right/left` (+ the `upside down` versions for level 3) |
+| Characters and pictures | Assets tab -> **Images**: `duck0`, `dragon0`, `cannon` (+ `cannon fire` animation), `chicken boss`, `C1` (fireball), `C2` (firework), `C3` (egg), `Random` (shuriken), `heart`, `water waves`, the 3 backgrounds, `start menu` |
+| Duck animations | Assets tab -> **Animations**: `duck walk right/left` (+ the `upside down` versions for level 3) |
 | Code | Blocks: one group per job (controls, coins, getting hurt, level 2, hit the boss, enemies attack, level 1 start) |
 
 ### Change a level
 Open its tile map and paint. No code needed:
 * Paint **`coin0`** tiles where you want coins.
-* Paint **`cannon spot`** tiles in level 1 for more cannons.
+* Paint **`cannon spot`** tiles in level 1 for more cannons. Each one becomes a `cannon` sprite when the level starts.
 * Leave holes in the floor for pits (falling in costs a life).
 * **Keep gaps at least 2 tiles tall.** The duck is 22px tall and a tile is 16px, so it gets wedged in a 1-tile-high gap.
 * The duck starts at column 1, row 5 (level 1), column 2, row 5 (level 2) and column 2, row 2 (level 3). Those are the `startSpot` blocks; keep those tiles empty.
@@ -48,7 +48,7 @@ Touching anything of kind **Enemy** already costs a life, and shurikens already 
 Create a sprite of kind **Fire**. The existing "Fire" event already takes a life and removes it when it touches the duck.
 
 ### Add a new level
-1. Assets → Tile Maps → **+** and draw it (16×16 tiles, 8 rows tall works with the camera).
+1. Assets -> Tile Maps -> **+** and draw it (16×16 tiles, 8 rows tall works with the camera).
 2. Copy the blocks under "LEVEL 2: walk into the gate": set `level`, set the background, set the tilemap, set `startSpot`, place the duck, create the boss.
 3. Trigger it from the end of the previous level, like the gate tile does.
 
@@ -56,7 +56,7 @@ Create a sprite of kind **Fire**. The existing "Fire" event already takes a life
 
 ## Bringing in your own art
 
-MakeCode only has **15 colours** for the whole game (they are in `pxt.json` → `palette`). Your pictures get converted to the closest of those colours.
+MakeCode only has **15 colours** for the whole game (they are in `pxt.json` -> `palette`). Your pictures get converted to the closest of those colours.
 
 The tool `tools/art_to_makecode.py` does the conversion. It needs Python 3 and Pillow (`pip install pillow`). Run it from the `tools` folder:
 
@@ -70,7 +70,7 @@ It prints a line like `let mySprite = img\`...\``. Paste that into the **JavaScr
 
 Rules the tool already follows for you (follow them if you draw in MakeCode too):
 * **Backgrounds** are 160×120 (the screen size).
-* **Sprites** should be about 16–50 px. Transparent PNG backgrounds stay transparent.
+* **Sprites** should be about 16-50 px. Transparent PNG backgrounds stay transparent.
 * **Animation frames must all be the same size, with the character filling the same box in every frame.** If a frame is 1px wider or taller, the hitbox changes each frame and the character gets stuck in walls or falls through floors. The tool trims all frames to the same box.
 * **Animation width and height should be even numbers.** Odd sizes made the duck look scrambled before.
 

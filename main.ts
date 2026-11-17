@@ -1,8 +1,8 @@
 namespace SpriteKind {
     export const Fire = SpriteKind.create()
     export const Heart = SpriteKind.create()
-    export const Water = SpriteKind.create()
     export const Menu = SpriteKind.create()
+    export const Cannon = SpriteKind.create()
 }
 // ===== HELPERS =====
 // lose a life, then 1 second where you can't be hurt again
@@ -131,6 +131,13 @@ function startLevel1 () {
     walkRight = assets.animation`duck walk right`
     scene.setBackgroundImage(assets.image`level 1 background`)
     tiles.setCurrentTilemap(tilemap`level 1 rooftops`)
+    // put a cannon on every cannon spot tile
+    for (let spot of tiles.getTilesByType(assets.tile`cannon spot`)) {
+        cannon = sprites.create(assets.image`cannon`, SpriteKind.Cannon)
+        tiles.placeOnTile(cannon, spot)
+        cannon.y += -3
+        tiles.setTileAt(spot, assets.tile`transparency16`)
+    }
     duck = sprites.create(assets.image`duck0`, SpriteKind.Player)
     controller.moveSprite(duck, 80, 0)
     duck.ay = 600
@@ -144,12 +151,13 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`gate0`, function (sprite, loc
     if (level == 1) {
         level = 2
         sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
+        sprites.destroyAllSpritesOfKind(SpriteKind.Cannon)
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
         startSpot = tiles.getTileLocation(2, 5)
         tiles.placeOnTile(duck, startSpot)
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
-        boss.setPosition(560, 100)
+        boss.setPosition(560, 88)
         boss.vx = -30
         boss.setFlag(SpriteFlag.GhostThroughWalls, true)
         bossHealth = 10
@@ -169,10 +177,6 @@ function startLevel3 () {
     walkLeft = assets.animation`duck walk left upside down`
     walkRight = assets.animation`duck walk right upside down`
     duck.setImage(walkRight[0])
-    water = sprites.create(assets.image`water waves`, SpriteKind.Water)
-    water.setFlag(SpriteFlag.RelativeToCamera, true)
-    water.setFlag(SpriteFlag.Ghost, true)
-    water.setPosition(80, 100)
     boss = sprites.create(assets.image`chicken boss`, SpriteKind.Enemy)
     tiles.placeOnTile(boss, tiles.getTileLocation(24, 2))
     boss.ay = -400
@@ -232,17 +236,16 @@ game.onUpdate(function () {
 game.onUpdateInterval(1500, function () {
     // level 1: cannons near the duck shoot fireworks
     if (level == 1) {
-        for (let cannonSpot of tiles.getTilesByType(assets.tile`cannon spot`)) {
-            firework = sprites.create(assets.image`C2`, SpriteKind.Fire)
-            tiles.placeOnTile(firework, cannonSpot)
-            if (Math.abs(firework.x - duck.x) < 150) {
+        for (let oneCannon of sprites.allOfKind(SpriteKind.Cannon)) {
+            if (Math.abs(oneCannon.x - duck.x) < 150) {
+                animation.runImageAnimation(oneCannon, assets.animation`cannon fire`, 80, false)
+                firework = sprites.create(assets.image`C2`, SpriteKind.Fire)
+                firework.setPosition(oneCannon.x - 8, oneCannon.y)
                 firework.vx = -50
                 firework.vy = -150
                 firework.ay = 200
                 firework.setFlag(SpriteFlag.GhostThroughWalls, true)
                 firework.lifespan = 2000
-            } else {
-                firework.destroy()
             }
         }
     }
@@ -269,7 +272,7 @@ let egg: Sprite = null
 let fireball: Sprite = null
 let firework: Sprite = null
 let heart: Sprite = null
-let water: Sprite = null
+let cannon: Sprite = null
 let bossHealth = 0
 let boss: Sprite = null
 let shuriken: Sprite = null
