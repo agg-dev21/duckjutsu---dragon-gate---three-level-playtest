@@ -227,9 +227,9 @@ game.onUpdate(function () {
             duck.vy = -150
         }
     }
-    // level 2: ladders. On a ladder there is no gravity and up/down climb.
-    if (level == 2) {
-        if (duck.tileKindAt(TileDirection.Center, assets.tile`myTile0`) || duck.tileKindAt(TileDirection.Center, assets.tile`myTile1`)) {
+    // levels 1 and 2: ladders. On a ladder there is no gravity and up/down climb.
+    if (level == 1 || level == 2) {
+        if (duck.tileKindAt(TileDirection.Center, assets.tile`myTile0`) || (duck.tileKindAt(TileDirection.Center, assets.tile`myTile1`) || duck.tileKindAt(TileDirection.Center, assets.tile`myTile2`))) {
             duck.ay = 0
             duck.vy = 0
             if (controller.up.isPressed()) {

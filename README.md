@@ -2,7 +2,7 @@
 
 A 3-level ninja duck platformer made in MakeCode Arcade (Blocks).
 
-1. **Rooftops** - jump across the rooftops, dodge the cannon fireworks, reach the door.
+1. **Rooftops** - jump across the rooftops, dodge the cannon fireworks, reach the door. Ladders lead up to the beams and a secret room.
 2. **Dragon Gate** - climb the tower (ladders: hold up/down) while the flying dragon chases you; throw shurikens until it falls. Spikes on the floor hurt.
 3. **Flooded Gate** - you are upside down under a ceiling; beat the chicken boss and don't fall in the water.
 
@@ -17,6 +17,9 @@ Controls: arrows move, **A / Space** jumps, **B / X** throws a shuriken. Running
 ## How to add stuff
 
 Everything below is done in the MakeCode editor, in **Blocks** and the **Assets** tab.
+
+### Ladders
+Paint any of the ladder tiles (`myTile0`, `myTile1`, `myTile2`) in level 1 or 2 and the duck can climb it with up/down. Leave the ladder tiles as **not walls**, and if a ladder goes up through a platform, paint the ladder over that platform tile too (and one more ladder tile above it) so the duck can climb out.
 
 ### Tuning the controls
 At the bottom of the code (on start) there are three numbers: `walkSpeed` (side speed), `jumpPower` (how high the duck jumps) and `climbSpeed` (ladder speed). Change them to make the duck feel right for your maps.
