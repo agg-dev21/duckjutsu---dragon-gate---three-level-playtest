@@ -379,12 +379,14 @@ game.onUpdate(function () {
     // If the duck's feet are on top of a platform, stick it there and move it along.
     riding = false
     if (level == 1 || level == 2) {
+        platformNumber = 0
         for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
+            platformNumber += 1
             if (duck.right > onePlatform.left + 2 && duck.left < onePlatform.right - 2 && duck.bottom >= onePlatform.top - 6 && duck.bottom <= onePlatform.top + 8 && duck.vy >= onePlatform.vy - 5) {
-                if (ridePlatform == onePlatform) {
+                if (rideNumber == platformNumber) {
                     duck.x += onePlatform.x - rideLastX
                 }
-                ridePlatform = onePlatform
+                rideNumber = platformNumber
                 rideLastX = onePlatform.x
                 duck.bottom = onePlatform.top
                 duck.vy = onePlatform.vy
@@ -393,7 +395,7 @@ game.onUpdate(function () {
             }
         }
         if (!(riding)) {
-            ridePlatform = null
+            rideNumber = 0
         }
     }
     // levels 1 and 2: ladders. On a ladder there is no gravity and up/down climb.
@@ -494,7 +496,8 @@ let lastOnPlatform = 0
 let riding = false
 let checkpointReached = false
 let platformLook: Image = null
-let ridePlatform: Sprite = null
+let rideNumber = 0
+let platformNumber = 0
 let rideLastX = 0
 let platformTurnTime = 0
 let spikeHits = 0
