@@ -289,6 +289,8 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
 // ===== LEVEL 3: upside down over the water =====
 function startLevel3 () {
     level = 3
+    // fresh hearts for the last level
+    info.setLife(5)
     sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
     sprites.destroyAllSpritesOfKind(SpriteKind.Heart)
     sprites.destroyAllSpritesOfKind(SpriteKind.Platform)
@@ -542,8 +544,8 @@ game.onUpdateInterval(1500, function () {
         fireball.setKind(SpriteKind.Fire)
         fireball.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
-    // level 3: the chicken throws an egg at the duck
-    if (level == 3) {
+    // level 3: the chicken throws an egg at the duck, but only when it is close
+    if (level == 3 && Math.abs(boss.x - duck.x) < 150) {
         egg = sprites.createProjectileFromSprite(assets.image`C3`, boss, 80, 0)
         if (duck.x < boss.x) {
             egg.vx = -80
