@@ -6,6 +6,7 @@ namespace SpriteKind {
     export const Platform = SpriteKind.create()
     export const Key = SpriteKind.create()
     export const NPC = SpriteKind.create()
+    export const Chicken = SpriteKind.create()
 }
 // ===== HELPERS =====
 // lose a life, then 1 second where you can't be hurt again
@@ -306,6 +307,95 @@ function startLevel3 () {
     bossSpeed = 55
     bossDirection = 1
     bossHealth = 15
+    // jumping chickens on the ceiling: shoot them with shurikens!
+    makeChicken(img`
+        . . . . . 5 4 4 5 c c c 5 . . . . . . .
+        . . . . . . 5 5 4 4 c c 5 5 5 . . . . .
+        . . . 5 5 5 5 a 5 5 a 5 a a 5 5 5 . . .
+        . . 5 5 a a a a a a a a a a a a 5 5 . .
+        . 5 5 a a a a a a 5 5 5 5 5 5 a a 5 5 .
+        5 5 a a a a a a 5 5 9 9 9 9 5 5 a a 5 5
+        5 9 9 a 9 a a 9 5 9 9 9 9 9 9 5 a a a 5
+        5 5 9 9 9 9 9 9 9 9 9 9 9 5 5 5 a 5 5 5
+        . 5 9 9 9 9 9 9 9 9 9 a 5 5 9 a a a a 5
+        . . 5 9 9 9 9 9 9 9 a a 9 4 9 9 a a a 5
+        . 5 5 9 9 9 9 9 9 9 9 5 5 5 5 9 9 4 a 5
+        5 c c 3 9 9 9 9 9 9 9 5 . . . 5 5 4 9 5
+        5 2 2 2 9 9 5 5 9 4 4 5 . . . . 5 5 5 5
+        . 5 a a 9 9 5 5 9 4 4 5 . . . . . . . .
+        . 5 a a a 9 5 c 9 4 4 5 . . . . . . . .
+        . 5 5 a a 9 9 9 9 4 4 5 . . . . . . . .
+        . . 5 a a 9 4 4 4 4 4 5 . . . . . . . .
+        . . 5 5 5 e e e e e 5 5 . . . . . . . .
+        . . . . 5 5 e e e e 5 . . . . . . . . .
+        . . . . . 5 5 e e e 5 . . . . . . . . .
+    `, 14)
+    makeChicken(img`
+        . . . . . f d d 2 2 2 2 . . . . . . . .
+        . . . . . f f f d d 2 2 f . . . . . . .
+        . . f f f f 7 7 7 7 2 2 f f f f f . . .
+        f f 8 7 7 7 7 7 7 7 7 7 7 7 7 7 f f f .
+        f 8 8 8 7 7 7 7 7 7 7 7 7 7 7 7 7 7 f .
+        f 8 8 8 8 8 8 7 7 7 f f f f f f 7 7 f f
+        f 8 8 8 8 8 8 8 7 f f 8 7 7 7 7 8 8 7 f
+        f f 8 8 8 8 8 8 8 f 8 8 7 7 8 8 7 7 7 f
+        . f 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 7 f
+        . f 8 8 8 8 8 8 8 8 7 7 8 8 8 8 8 8 7 7
+        f 9 9 9 7 7 8 8 8 8 7 f f f f f f 8 8 7
+        f 4 4 4 8 f f 8 8 8 f . f f f f f 8 8 7
+        f f 8 8 8 f f 8 8 8 f . f 8 8 8 8 8 7 7
+        . f 8 8 8 f 1 8 8 8 f . f f 7 7 7 7 7 f
+        . f 8 8 8 8 8 8 8 8 f . . f 7 7 7 7 f f
+        . f f 8 8 8 8 8 f f f . . f f f f f f .
+        . . f f d d d f f f f . . . . . . . . .
+        . . . f d d d d f f . . . . . . . . . .
+        . . . f f f d d f f . . . . . . . . . .
+        . . . . . f f f f . . . . . . . . . . .
+    `, 21)
+    makeChicken(img`
+        . . . . . a 9 9 a 4 4 4 a . . . . . . .
+        . . . a a a a a 9 9 4 4 a a a . . . . .
+        . a a 2 2 2 2 2 a a 2 a 2 2 a a a . . .
+        a a 2 2 2 2 2 2 2 2 2 2 2 2 2 2 a a . .
+        a 2 c 2 2 2 2 2 2 a a a a a a 2 2 a a .
+        a c 2 2 2 2 2 2 a a c c c c a a 2 2 a a
+        a c c 2 c 2 2 c a c c c c c c a 2 2 2 a
+        a c c c c c c c c c c c c a a a 2 a a a
+        . a c c c c c c c c c 2 a a 4 2 2 2 a a
+        . e e e c c c c c c 2 2 4 4 4 4 2 2 2 a
+        . a e e e c c c c c c a a a a 4 4 4 2 a
+        a 4 4 3 c c c c c c c a . . . a 4 4 4 a
+        a 4 4 4 c c 5 5 c 4 4 a . . a 4 4 4 a a
+        . a 2 2 c c 5 5 c 4 4 a . . a 4 a a a .
+        . a 2 2 2 c 5 1 c 4 4 a . . a a a . . .
+        . a a 2 2 c c c c 4 4 a . . . . . . . .
+        . . a 2 2 c 4 4 4 4 4 a . . . . . . . .
+        . . a a a e e e e e a a . . . . . . . .
+        . . . . a a e e e e a . . . . . . . . .
+        . . . . . a a e e e a . . . . . . . . .
+    `, 33)
+    makeChicken(img`
+        . . . . . f 4 4 f c c c f . . . . . . .
+        . . . . . . f f 4 4 c c f f f . . . . .
+        . . . f f f f b f f b f b b f f f . . .
+        . . f f b b b b b b b b b b b b f f . .
+        . f f b b b b b b f f f f f f b b f f .
+        f f b b b b b b f f 6 6 6 6 f f b b f f
+        f 6 6 b 6 b b 6 f 6 6 6 6 6 6 f b b b f
+        f f 6 6 6 6 6 6 6 6 6 6 6 f f f b f f f
+        . f 6 6 6 6 6 6 6 6 6 b f f 6 b b b b f
+        . . f 6 6 6 6 6 6 6 b b 6 6 6 6 b b b f
+        . f f 6 6 6 6 b 6 6 6 f f f f 6 6 6 b f
+        f c c 3 6 b b b 6 6 6 f . . . f f 6 6 f
+        f 2 2 2 6 6 f f 6 8 8 f . . f . f 6 6 f
+        . f b b 6 6 f f 6 8 8 f . f 6 f 6 6 6 f
+        . f b b b 6 f 1 6 8 8 f . f 6 6 6 6 f f
+        . f f b b 6 6 6 6 8 8 f . f 6 6 6 6 f .
+        . . f b b 6 8 8 8 8 8 f . f f f f f f .
+        . . f f f 7 7 7 7 7 f f . . . . . . . .
+        . . . . f f 7 7 7 7 f . . . . . . . . .
+        . . . . . f f 7 7 7 f . . . . . . . . .
+    `, 37)
     game.splash("Level 3", "Upside down! Don't fall in the water")
 }
 // ===== HIT THE BOSS =====
@@ -532,3 +622,31 @@ game.onUpdate(function () {
         duck.vx = 0
     }
 })
+// make a jumping chicken enemy on the ceiling of level 3
+function makeChicken (picture: Image, column: number) {
+    chicken = sprites.create(picture, SpriteKind.Chicken)
+    tiles.placeOnTile(chicken, tiles.getTileLocation(column, 2))
+    chicken.ay = -400
+    chicken.vx = 50
+    chicken.setBounceOnWall(true)
+}
+// jumping chickens: touching one hurts, a shuriken defeats it
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Chicken, function (sprite, otherSprite) {
+    hurt()
+})
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Chicken, function (sprite, otherSprite) {
+    sprite.destroy()
+    otherSprite.destroy(effects.disintegrate, 200)
+    music.smallCrash.play()
+})
+// the chickens keep jumping down from the ceiling
+game.onUpdate(function () {
+    if (level == 3) {
+        for (let oneChicken of sprites.allOfKind(SpriteKind.Chicken)) {
+            if (oneChicken.isHittingTile(CollisionDirection.Top)) {
+                oneChicken.vy = 200
+            }
+        }
+    }
+})
+let chicken: Sprite = null
