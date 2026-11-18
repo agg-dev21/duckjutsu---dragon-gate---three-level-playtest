@@ -5,6 +5,7 @@ namespace SpriteKind {
     export const Cannon = SpriteKind.create()
     export const Platform = SpriteKind.create()
     export const Key = SpriteKind.create()
+    export const NPC = SpriteKind.create()
 }
 // ===== HELPERS =====
 // lose a life, then 1 second where you can't be hurt again
@@ -126,6 +127,9 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Key, function (sprite, otherSpri
     duck.sayText("Got the key!", 1000, false)
     music.powerUp.play()
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.NPC, function (sprite, otherSprite) {
+    otherSprite.sayText("The big chicken is ahead! Throw with B!", 1500, false)
+})
 // ===== MOVING PLATFORMS =====
 // land on a platform from above and ride along with it
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Platform, function (sprite, otherSprite) {
@@ -221,7 +225,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
         boss.setPosition(560, 40)
         boss.setFlag(SpriteFlag.GhostThroughWalls, true)
-        bossSpeed = 30
+        bossSpeed = 40
         boss.follow(duck, bossSpeed)
         bossHealth = 15
         game.splash("Level 2", "Climb ladders with up/down. B throws!")
@@ -242,6 +246,9 @@ function startLevel3 () {
     walkRight = assets.animation`duck walk right upside down`
     animation.stopAnimation(animation.AnimationTypes.All, duck)
     duck.setImage(walkRight[0])
+    // a friendly chicken hanging near the start gives a tip
+    npc = sprites.create(assets.image`npc chicken`, SpriteKind.NPC)
+    npc.setPosition(88, 26)
     boss = sprites.create(assets.image`chicken boss`, SpriteKind.Enemy)
     tiles.placeOnTile(boss, tiles.getTileLocation(24, 2))
     boss.ay = -400
@@ -383,6 +390,7 @@ game.onUpdateInterval(3000, function () {
     }
 })
 let bossSpeed = 0
+let npc: Sprite = null
 let platform: Sprite = null
 let key: Sprite = null
 let hasKey = false

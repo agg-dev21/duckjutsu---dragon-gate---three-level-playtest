@@ -1016,6 +1016,29 @@ ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ...............fff77..ffff5558
 .......................f77f555
 `;
+            case "npcChicken":
+            case "npc chicken":return img`
+.....a99a444a.......
+...aaaaa9944aaa.....
+.aa22222aa2a22aaa...
+aa22222222222222aa..
+a2c222222aaaaaa22aa.
+ac222222aaccccaa22aa
+acc2c22cacccccca222a
+accccccccccccaaa2aaa
+.accccccccc2aa4222aa
+.eeecccccc224444222a
+.aeeeccccccaaaa4442a
+a443ccccccca...a444a
+a444cc55c44a..a444aa
+.a22cc55c44a..a4aaa.
+.a222c51c44a..aaa...
+.aa22cccc44a........
+..a22c44444a........
+..aaaeeeeeaa........
+....aaeeeea.........
+.....aaeeea.........
+`;
         }
         return null;
     })

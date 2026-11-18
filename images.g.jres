@@ -136,6 +136,11 @@
         "displayName": "waiting lol",
         "namespace": "mySongs."
     },
+    "npcChicken": {
+        "data": "hwQUABQAAAAAoKqqAKAKAAAAAAAAqsLM6kqkqgAAAAAAKizM7E4koqoAAACgIiLC7D4kIqIAAACgIiLMzM7MIqIKAACqIiLCzMzMzOyqAACpIiLCzMxVxeSuAACpIiLMzMxVweTuAACaKqLKzMzMzOTuAACUKqrMzMxEROTuAABEIsrMLMxERKSqAABEKsrMIqqqqqoAAACqIsrMSgoAAAAAAACgIsqsSgoAAAAAAACgKqqsRAqqCgAAAAAAKqKqQqRECgAAAAAAqiIiIkSkCgAAAAAAoCqiIkSkAAAAAAAAAKqiKkKqAAAAAAAAAKCqqqoKAAAAAAA=",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "npc chicken"
+    },
     "*": {
         "mimeType": "image/x-mkcd-f4",
         "dataEncoding": "base64",
