@@ -21,6 +21,9 @@ Everything below is done in the MakeCode editor, in **Blocks** and the **Assets*
 ### Ladders
 Paint any of the ladder tiles (`myTile0`, `myTile1`, `myTile2`) in level 1 or 2 and the duck can climb it with up/down. Leave the ladder tiles as **not walls**, and if a ladder goes up through a platform, paint the ladder over that platform tile too (and one more ladder tile above it) so the duck can climb out.
 
+### Music
+Two songs live in the Assets tab under **Songs**: `waiting lol` plays on the start menu and `drums 0` loops during the game. Edit them there, or swap the song in the two "play song" blocks.
+
 ### Tuning the controls
 At the bottom of the code (on start) there are three numbers: `walkSpeed` (side speed), `jumpPower` (how high the duck jumps) and `climbSpeed` (ladder speed). Change them to make the duck feel right for your maps.
 

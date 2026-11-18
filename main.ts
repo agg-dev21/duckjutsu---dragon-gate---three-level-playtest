@@ -120,6 +120,9 @@ info.onLifeZero(function () {
 // ===== LEVEL 1: rooftops =====
 function startLevel1 () {
     arrow.destroy()
+    // game music (loops for the whole game)
+    music.stopAllSounds()
+    music.play(music.createSong(assets.song`drums 0`), music.PlaybackMode.LoopingInBackground)
     level = 1
     info.setLife(5)
     throwSpeed = 150
@@ -339,6 +342,8 @@ level = 0
 menuChoice = 0
 soundOn = true
 scene.setBackgroundImage(assets.image`start menu`)
+// menu music
+music.play(music.createSong(assets.song`waiting lol`), music.PlaybackMode.LoopingInBackground)
 arrow = sprites.create(img`
     4 4 . . . .
     4 4 4 4 . .
