@@ -1,0 +1,115 @@
+
+// ===== DEMO BOT (only in the recording copy, not the real game) =====
+function tap (b: controller.Button, ms: number) {
+    b.setPressed(true)
+    pause(ms)
+    b.setPressed(false)
+}
+function run (b: controller.Button, ms: number, throwing: boolean) {
+    b.setPressed(true)
+    let t = 0
+    while (t < ms) {
+        if (duck.isHittingTile(CollisionDirection.Right) || duck.isHittingTile(CollisionDirection.Left)) {
+            tap(controller.A, 40)
+        }
+        if (level == 1 && t % 650 == 0) {
+            tap(controller.A, 40)
+        }
+        if (throwing && t % 400 == 0) {
+            tap(controller.B, 30)
+        }
+        if (info.life() < 3) {
+            info.setLife(5)
+        }
+        pause(50)
+        t += 50
+    }
+    b.setPressed(false)
+}
+function faceAndThrow (target: Sprite) {
+    if (target.x > duck.x) {
+        tap(controller.right, 40)
+    } else {
+        tap(controller.left, 40)
+    }
+    tap(controller.B, 40)
+    if (info.life() < 3) {
+        info.setLife(5)
+    }
+}
+control.runInParallel(function () {
+    console.log("DEMO menu")
+    pause(2000)
+    tap(controller.down, 100)
+    pause(600)
+    tap(controller.down, 100)
+    pause(600)
+    tap(controller.up, 100)
+    pause(500)
+    tap(controller.up, 100)
+    pause(700)
+    tap(controller.A, 100)
+    pause(1800)
+    tap(controller.A, 100)
+    console.log("DEMO level1 run")
+    pause(800)
+    run(controller.right, 5200, false)
+    console.log("DEMO level1 key")
+    duck.setPosition(185, 20)
+    duck.vy = 0
+    pause(700)
+    run(controller.right, 1300, false)
+    pause(1000)
+    console.log("DEMO level1 door")
+    duck.setPosition(61 * 16 + 4, 40)
+    duck.vy = 0
+    pause(900)
+    run(controller.right, 1500, false)
+    pause(1500)
+    tap(controller.A, 100)
+    console.log("DEMO level2")
+    pause(4500)
+    let t = 0
+    while (t < 12000) {
+        faceAndThrow(boss)
+        pause(350)
+        t += 430
+    }
+    console.log("DEMO level2 finish")
+    bossHealth = 2
+    t = 0
+    while (level == 2 && t < 10000) {
+        if (t > 2500) {
+            boss.setPosition(duck.x + 50, duck.y)
+        }
+        faceAndThrow(boss)
+        pause(300)
+        t += 380
+    }
+    pause(1500)
+    tap(controller.A, 100)
+    console.log("DEMO level3 chickens")
+    pause(800)
+    run(controller.right, 9000, true)
+    console.log("DEMO level3 boss")
+    t = 0
+    while (t < 8000) {
+        faceAndThrow(boss)
+        pause(350)
+        t += 430
+    }
+    bossHealth = 2
+    t = 0
+    while (level == 3 && t < 10000 && bossHealth > 0) {
+        if (t > 2500) {
+            boss.setPosition(duck.x + 40, duck.y)
+        }
+        faceAndThrow(boss)
+        pause(300)
+        t += 380
+    }
+    console.log("DEMO win")
+    pause(2500)
+    tap(controller.A, 100)
+    console.log("DEMO done")
+})
