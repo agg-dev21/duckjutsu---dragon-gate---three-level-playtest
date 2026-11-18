@@ -233,6 +233,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
         startSpot = tiles.getTileLocation(2, 16)
+        checkpointReached = false
         tiles.placeOnTile(duck, startSpot)
         // the dragon flies around the tower and chases the duck
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
@@ -313,6 +314,8 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     sprite.destroy()
     bossHealth += -1
     otherSprite.startEffect(effects.fire, 200)
+    // show how much health the boss has left
+    otherSprite.sayText(bossHealth, 500, false)
     music.smallCrash.play()
     // under half health: the boss gets angry and faster
     if (bossHealth == 7) {
@@ -344,6 +347,17 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
 })
 // ===== EVERY FRAME =====
 game.onUpdate(function () {
+    // the duck blinks while it can't be hurt
+    if (level > 0) {
+        duck.setFlag(SpriteFlag.Invisible, game.runtime() < safeTime && Math.floor(game.runtime() / 100) % 2 == 0)
+    }
+    // level 2 checkpoint: once you reach the top of the tower, you restart up there
+    if (level == 2 && !(checkpointReached) && duck.y < 120) {
+        checkpointReached = true
+        startSpot = tiles.getTileLocation(2, 4)
+        duck.sayText("Checkpoint!", 1000, false)
+        music.baDing.play()
+    }
     // levels 1 and 2: standing on spikes hurts and bounces you up
     if (level == 1 || level == 2) {
         if (duck.isHittingTile(CollisionDirection.Bottom) && duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
@@ -478,6 +492,7 @@ let key: Sprite = null
 let hasKey = false
 let lastOnPlatform = 0
 let riding = false
+let checkpointReached = false
 let platformLook: Image = null
 let ridePlatform: Sprite = null
 let rideLastX = 0
