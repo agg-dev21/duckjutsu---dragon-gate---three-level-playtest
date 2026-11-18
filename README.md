@@ -2,7 +2,7 @@
 
 A 3-level ninja duck platformer made in MakeCode Arcade (Blocks).
 
-1. **Rooftops** - jump across the rooftops, dodge the cannon fireworks, grab coins, reach the gate.
+1. **Rooftops** - jump across the rooftops, dodge the cannon fireworks, reach the door.
 2. **Dragon Gate** - climb the tower (ladders: hold up/down) while the flying dragon chases you; throw shurikens until it falls. Spikes on the floor hurt.
 3. **Flooded Gate** - you are upside down under a ceiling; beat the chicken boss and don't fall in the water.
 
@@ -23,14 +23,13 @@ Everything below is done in the MakeCode editor, in **Blocks** and the **Assets*
 |---|---|
 | Level layouts | Assets tab -> **Tile Maps**: `level 1 rooftops`, `level 2 dragon arena`, `level 3 flooded gate` |
 | Floor and wall tiles | `lvl1tile0`, `lvl2 tile`, `lvl3 tile 3`, `lvl3 tile 4` (painted as walls you can stand on) |
-| Special tiles | `coin0` (pick-up), `cannon spot` (a cannon that shoots fireworks), `gate0` (walk in to reach level 2), `spikes0` (standing on it hurts) |
+| Special tiles | `cannon spot` (a cannon that shoots fireworks), `door` (walk in to reach level 2), `spikes0` (standing on it hurts) |
 | Characters and pictures | Assets tab -> **Images**: `duck0`, `dragon0`, `cannon` (+ `cannon fire` animation), `chicken boss`, `C1` (fireball), `C2` (firework), `C3` (egg), `Random` (shuriken), `heart`, `water waves`, the 3 backgrounds, `start menu` |
 | Duck animations | Assets tab -> **Animations**: `duck walk right/left` (+ the `upside down` versions for level 3) |
 | Code | Blocks: one group per job (controls, coins, getting hurt, level 2, hit the boss, enemies attack, level 1 start) |
 
 ### Change a level
 Open its tile map and paint. No code needed:
-* Paint **`coin0`** tiles where you want coins.
 * Paint **`cannon spot`** tiles in level 1 for more cannons. Each one becomes a `cannon` sprite when the level starts.
 * Leave holes in the floor for pits (falling in costs a life).
 * **Keep gaps at least 2 tiles tall.** The duck is 22px tall and a tile is 16px, so it gets wedged in a 1-tile-high gap.

@@ -99,11 +99,6 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 // ===== PICK-UPS =====
-scene.onOverlapTile(SpriteKind.Player, assets.tile`coin0`, function (sprite, location) {
-    info.changeScoreBy(1)
-    tiles.setTileAt(location, assets.tile`transparency16`)
-    music.baDing.play()
-})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Heart, function (sprite, otherSprite) {
     otherSprite.destroy()
     info.changeLifeBy(1)
@@ -148,8 +143,8 @@ function startLevel1 () {
     tiles.placeOnTile(duck, startSpot)
     game.splash("Level 1", "Jump on the rooftops!")
 }
-// ===== LEVEL 2: walk into the gate =====
-scene.onOverlapTile(SpriteKind.Player, assets.tile`gate0`, function (sprite, location) {
+// ===== LEVEL 2: walk into the door =====
+scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, location) {
     if (level == 1) {
         level = 2
         sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
