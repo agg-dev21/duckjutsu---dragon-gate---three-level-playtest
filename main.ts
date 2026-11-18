@@ -3,6 +3,8 @@ namespace SpriteKind {
     export const Heart = SpriteKind.create()
     export const Menu = SpriteKind.create()
     export const Cannon = SpriteKind.create()
+    export const Platform = SpriteKind.create()
+    export const Key = SpriteKind.create()
 }
 // ===== HELPERS =====
 // lose a life, then 1 second where you can't be hurt again
@@ -12,6 +14,21 @@ function hurt () {
         safeTime = game.runtime() + 1000
         scene.cameraShake(2, 200)
     }
+}
+// make a moving platform at x, y with a speed (vx sideways, vy up/down)
+function makePlatform (x: number, y: number, vx: number, vy: number) {
+    platform = sprites.create(img`
+        4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
+        4 e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e 4
+        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+        5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
+        . 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 .
+        `, SpriteKind.Platform)
+    platform.setPosition(x, y)
+    platform.vx = vx
+    platform.vy = vy
+    platform.setFlag(SpriteFlag.GhostThroughWalls, true)
 }
 // ===== START MENU =====
 // up and down move the arrow
@@ -54,7 +71,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         if (duck.isHittingTile(CollisionDirection.Top) || duck.vy == 0) {
             duck.vy = 200
         }
-    } else if (duck.isHittingTile(CollisionDirection.Bottom) || duck.vy == 0) {
+    } else if (duck.isHittingTile(CollisionDirection.Bottom) || duck.vy == 0 || game.runtime() - lastOnPlatform < 150) {
         duck.vy = 0 - jumpPower
     }
 })
@@ -103,6 +120,29 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Heart, function (sprite, otherSp
     otherSprite.destroy()
     info.changeLifeBy(1)
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Key, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    hasKey = true
+    duck.sayText("Got the key!", 1000, false)
+    music.powerUp.play()
+})
+// ===== MOVING PLATFORMS =====
+// land on a platform from above and ride along with it
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Platform, function (sprite, otherSprite) {
+    if (sprite.vy >= otherSprite.vy && sprite.bottom < otherSprite.top + 8) {
+        sprite.bottom = otherSprite.top
+        sprite.vy = otherSprite.vy
+        sprite.x += otherSprite.vx / 30
+        lastOnPlatform = game.runtime()
+    }
+})
+// every 2 seconds the platforms turn around
+game.onUpdateInterval(2000, function () {
+    for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
+        onePlatform.vx = 0 - onePlatform.vx
+        onePlatform.vy = 0 - onePlatform.vy
+    }
+})
 // ===== GETTING HURT =====
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Fire, function (sprite, otherSprite) {
     otherSprite.destroy()
@@ -144,18 +184,39 @@ function startLevel1 () {
     scene.cameraFollowSprite(duck)
     startSpot = tiles.getTileLocation(1, 11)
     tiles.placeOnTile(duck, startSpot)
+    // the key is on the top beam. You need it to open the door.
+    hasKey = false
+    key = sprites.create(img`
+        . . 4 4 4 4 . . . . . .
+        . 4 2 . . 2 4 . . . . .
+        4 2 . . . . 2 4 4 4 4 4
+        4 2 . . . . 2 4 4 4 4 4
+        . 4 2 . . 2 4 . . 4 . 4
+        . . 4 4 4 4 . . . 4 . 4
+        `, SpriteKind.Key)
+    key.setPosition(200, 40)
+    // platforms that move up and down
+    makePlatform(776, 140, 0, 30)
+    makePlatform(536, 190, 0, -30)
     game.splash("Level 1", "Jump on the rooftops!")
 }
 // ===== LEVEL 2: walk into the door =====
 scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, location) {
-    if (level == 1) {
+    if (level == 1 && !(hasKey)) {
+        duck.sayText("I need the key!", 500, false)
+    }
+    if (level == 1 && hasKey) {
         level = 2
         sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
         sprites.destroyAllSpritesOfKind(SpriteKind.Cannon)
+        sprites.destroyAllSpritesOfKind(SpriteKind.Platform)
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
         startSpot = tiles.getTileLocation(6, 25)
         tiles.placeOnTile(duck, startSpot)
+        // platforms that move left and right
+        makePlatform(120, 275, 60, 0)
+        makePlatform(420, 211, 50, 0)
         // the dragon flies around the tower and chases the duck
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
         boss.setPosition(560, 40)
@@ -171,6 +232,7 @@ function startLevel3 () {
     level = 3
     sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
     sprites.destroyAllSpritesOfKind(SpriteKind.Heart)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Platform)
     scene.setBackgroundImage(assets.image`level 3 background`)
     tiles.setCurrentTilemap(tilemap`level 3 flooded gate`)
     startSpot = tiles.getTileLocation(2, 2)
@@ -226,8 +288,18 @@ game.onUpdate(function () {
     // levels 1 and 2: standing on spikes hurts and bounces you up
     if (level == 1 || level == 2) {
         if (duck.isHittingTile(CollisionDirection.Bottom) && duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
-            hurt()
-            duck.vy = -150
+            if (game.runtime() > safeTime) {
+                // spikes take half a heart: every 2nd spike hit loses a heart
+                spikeHits += 1
+                safeTime = game.runtime() + 1000
+                scene.cameraShake(2, 200)
+                duck.sayText("Ouch!", 500, false)
+                if (spikeHits == 2) {
+                    spikeHits = 0
+                    info.changeLifeBy(-1)
+                }
+            }
+            duck.vy = -200
         }
     }
     // levels 1 and 2: ladders. On a ladder there is no gravity and up/down climb.
@@ -311,6 +383,11 @@ game.onUpdateInterval(3000, function () {
     }
 })
 let bossSpeed = 0
+let platform: Sprite = null
+let key: Sprite = null
+let hasKey = false
+let lastOnPlatform = 0
+let spikeHits = 0
 let bossDirection = 0
 let egg: Sprite = null
 let fireball: Sprite = null

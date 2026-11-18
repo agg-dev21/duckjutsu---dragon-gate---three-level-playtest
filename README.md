@@ -2,8 +2,8 @@
 
 A 3-level ninja duck platformer made in MakeCode Arcade (Blocks).
 
-1. **Rooftops** - jump across the rooftops, dodge the cannon fireworks, reach the door. Ladders lead up to the beams and a secret room.
-2. **Dragon Gate** - climb the tower (ladders: hold up/down) while the flying dragon chases you; throw shurikens until it falls. Spikes on the floor hurt.
+1. **Rooftops** - jump across the rooftops, dodge the cannon fireworks, grab the key on the top beam, then reach the door in the top-right corner. Moving platforms go up and down. Ladders lead up to the beams and a secret room.
+2. **Dragon Gate** - climb the tower (ladders: hold up/down) while the flying dragon chases you; throw shurikens until it falls. Platforms move left and right. Spikes take half a heart.
 3. **Flooded Gate** - you are upside down under a ceiling; beat the chicken boss and don't fall in the water.
 
 The game opens on a **start menu** (START / SETTINGS / QUIT). Up/down move the arrow, A picks. SETTINGS turns the sound on or off.
@@ -20,6 +20,9 @@ Everything below is done in the MakeCode editor, in **Blocks** and the **Assets*
 
 ### Ladders
 Paint any of the ladder tiles (`myTile0`, `myTile1`, `myTile2`) in level 1 or 2 and the duck can climb it with up/down. Leave the ladder tiles as **not walls**, and if a ladder goes up through a platform, paint the ladder over that platform tile too (and one more ladder tile above it) so the duck can climb out.
+
+### Moving platforms
+In the `startLevel1` and gate/door code there are `makePlatform(x, y, vx, vy)` blocks. `vx` moves sideways, `vy` moves up/down; every 2 seconds each platform turns around. Add more by copying a block and changing the numbers.
 
 ### Music
 Two songs live in the Assets tab under **Songs**: `waiting lol` plays on the start menu and `drums 0` loops during the game. Edit them there, or swap the song in the two "play song" blocks.
