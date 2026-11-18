@@ -22,7 +22,7 @@ Everything below is done in the MakeCode editor, in **Blocks** and the **Assets*
 Paint any of the ladder tiles (`myTile0`, `myTile1`, `myTile2`) in level 1 or 2 and the duck can climb it with up/down. Leave the ladder tiles as **not walls**, and if a ladder goes up through a platform, paint the ladder over that platform tile too (and one more ladder tile above it) so the duck can climb out.
 
 ### Moving platforms
-In the `startLevel1` and gate/door code there are `makePlatform(x, y, vx, vy)` blocks. `vx` moves sideways, `vy` moves up/down; every 2 seconds each platform turns around. Add more by copying a block and changing the numbers.
+In the `startLevel1` and door code there are `makePlatform(picture, x, y, vx, vy)` blocks; the picture (`platformLook`) is drawn from that level's floor tile. `vx` moves sideways, `vy` moves up/down; every 2 seconds each platform turns around. Add more by copying a block and changing the numbers.
 
 ### Music
 Two songs live in the Assets tab under **Songs**: `waiting lol` plays on the start menu and `drums 0` loops during the game. Edit them there, or swap the song in the two "play song" blocks.

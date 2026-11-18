@@ -16,16 +16,9 @@ function hurt () {
         scene.cameraShake(2, 200)
     }
 }
-// make a moving platform at x, y with a speed (vx sideways, vy up/down)
-function makePlatform (x: number, y: number, vx: number, vy: number) {
-    platform = sprites.create(img`
-        4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4
-        4 e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e 4
-        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
-        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
-        5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
-        . 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 .
-        `, SpriteKind.Platform)
+// make a moving platform (with this level's picture) at x, y with a speed (vx sideways, vy up/down)
+function makePlatform (picture: Image, x: number, y: number, vx: number, vy: number) {
+    platform = sprites.create(picture, SpriteKind.Platform)
     platform.setPosition(x, y)
     platform.vx = vx
     platform.vy = vy
@@ -138,19 +131,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Key, function (sprite, otherSpri
     duck.sayText("Got the key!", 1000, false)
     music.powerUp.play()
 })
-sprites.onOverlap(SpriteKind.Player, SpriteKind.NPC, function (sprite, otherSprite) {
-    otherSprite.sayText("The big chicken is ahead! Throw with B!", 1500, false)
-})
 // ===== MOVING PLATFORMS =====
-// land on a platform from above and ride along with it
-sprites.onOverlap(SpriteKind.Player, SpriteKind.Platform, function (sprite, otherSprite) {
-    if (sprite.vy >= otherSprite.vy && sprite.y < otherSprite.y) {
-        sprite.bottom = otherSprite.top
-        sprite.vy = otherSprite.vy
-        sprite.x += otherSprite.vx / 30
-        lastOnPlatform = game.runtime()
-    }
-})
 // every 2 seconds (counted from when the level's platforms were made) they turn around,
 // so they always stay on their path
 game.onUpdate(function () {
@@ -225,8 +206,20 @@ function startLevel1 () {
     key.setPosition(200, 40)
     game.splash("Level 1", "Jump on the rooftops!")
     // platforms that move up and down (made after the message so their timer starts now)
-    makePlatform(776, 140, 0, 30)
-    makePlatform(536, 190, 0, -30)
+    platformLook = img`
+        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+        3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e
+        e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3
+        3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e
+        e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3
+        3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3
+        3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5
+        3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+        `
+    makePlatform(platformLook, 776, 140, 0, 30)
+    makePlatform(platformLook, 536, 190, 0, -30)
 }
 // ===== LEVEL 2: walk into the door =====
 scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, location) {
@@ -249,10 +242,48 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         bossSpeed = 35
         boss.follow(duck, bossSpeed)
         bossHealth = 15
-        game.splash("Level 2", "Climb ladders with up/down. B throws!")
+        game.splash("Level 2", "Climb the tower and beat the dragon!")
+        // a friendly chicken next to you explains the buttons, then leaves
+        npc = sprites.create(img`
+            . . . . . a a e e e a . . . . . . . . .
+            . . . . a a e e e e a . . . . . . . . .
+            . . a a a e e e e e a a . . . . . . . .
+            . . a 2 2 c 4 4 4 4 4 a . . . . . . . .
+            . a a 2 2 c c c c 4 4 a . . . . . . . .
+            . a 2 2 2 c 5 1 c 4 4 a . . a a a . . .
+            . a 2 2 c c 5 5 c 4 4 a . . a 4 a a a .
+            a 4 4 4 c c 5 5 c 4 4 a . . a 4 4 4 a a
+            a 4 4 3 c c c c c c c a . . . a 4 4 4 a
+            . a e e e c c c c c c a a a a 4 4 4 2 a
+            . e e e c c c c c c 2 2 4 4 4 4 2 2 2 a
+            . a c c c c c c c c c 2 a a 4 2 2 2 a a
+            a c c c c c c c c c c c c a a a 2 a a a
+            a c c 2 c 2 2 c a c c c c c c a 2 2 2 a
+            a c 2 2 2 2 2 2 a a c c c c a a 2 2 a a
+            a 2 c 2 2 2 2 2 2 a a a a a a 2 2 a a .
+            a a 2 2 2 2 2 2 2 2 2 2 2 2 2 2 a a . .
+            . a a 2 2 2 2 2 a a 2 a 2 2 a a a . . .
+            . . . a a a a a 9 9 4 4 a a a . . . . .
+            . . . . . a 9 9 a 4 4 4 a . . . . . . .
+            `, SpriteKind.NPC)
+        npc.setPosition(136, 358)
+        npc.sayText("Up/down climbs ladders. A jumps. B throws!", 4000, false)
+        npc.lifespan = 5000
         // platforms that move left and right
-        makePlatform(120, 275, 60, 0)
-        makePlatform(420, 211, 50, 0)
+        platformLook = img`
+            6 6 6 6 6 6 6 b b b 6 6 6 6 6 6 6 6 6 6 6 6 6 b b b 6 6 6 6 6 6
+            8 8 8 8 8 8 8 6 b 8 8 8 8 8 6 b 8 8 8 8 8 8 8 6 b 8 8 8 8 8 6 b
+            8 8 8 8 6 6 8 8 b 8 8 8 6 b 8 8 8 8 8 8 6 6 8 8 b 8 8 8 6 b 8 8
+            8 6 b 8 8 8 8 b b b 8 8 6 b 8 8 8 6 b 8 8 8 8 b b b 8 8 6 b 8 8
+            b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b
+            b 6 6 6 6 6 6 6 6 6 6 6 6 6 b b b 6 6 6 6 6 6 6 6 6 6 6 6 6 b b
+            8 8 8 8 8 6 8 8 8 8 8 8 8 8 6 b 8 8 8 8 8 6 8 8 8 8 8 8 8 8 6 b
+            8 6 8 8 8 8 8 8 8 8 8 8 8 8 6 b 8 6 8 8 8 8 8 8 8 8 8 8 8 8 6 b
+            8 8 6 8 8 8 8 8 6 b b b 8 8 6 b 8 8 6 8 8 8 8 8 6 b b b 8 8 6 b
+            b 8 8 8 b b 8 8 8 8 8 8 8 8 b b b 8 8 8 b b 8 8 8 8 8 8 8 8 b b
+            `
+        makePlatform(platformLook, 120, 275, 60, 0)
+        makePlatform(platformLook, 420, 211, 50, 0)
     }
 })
 // ===== LEVEL 3: upside down over the water =====
@@ -270,9 +301,6 @@ function startLevel3 () {
     walkRight = assets.animation`duck walk right upside down`
     animation.stopAnimation(animation.AnimationTypes.All, duck)
     duck.setImage(walkRight[0])
-    // a friendly chicken hanging near the start gives a tip
-    npc = sprites.create(assets.image`npc chicken`, SpriteKind.NPC)
-    npc.setPosition(88, 26)
     boss = sprites.create(assets.image`chicken boss`, SpriteKind.Enemy)
     tiles.placeOnTile(boss, tiles.getTileLocation(24, 2))
     boss.ay = -400
@@ -333,9 +361,32 @@ game.onUpdate(function () {
             duck.vy = -200
         }
     }
+    // levels 1 and 2: standing on a moving platform.
+    // If the duck's feet are on top of a platform, stick it there and move it along.
+    riding = false
+    if (level == 1 || level == 2) {
+        for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
+            if (duck.right > onePlatform.left + 2 && duck.left < onePlatform.right - 2 && duck.bottom >= onePlatform.top - 6 && duck.bottom <= onePlatform.top + 8 && duck.vy >= onePlatform.vy - 5) {
+                if (ridePlatform == onePlatform) {
+                    duck.x += onePlatform.x - rideLastX
+                }
+                ridePlatform = onePlatform
+                rideLastX = onePlatform.x
+                duck.bottom = onePlatform.top
+                duck.vy = onePlatform.vy
+                riding = true
+                lastOnPlatform = game.runtime()
+            }
+        }
+        if (!(riding)) {
+            ridePlatform = null
+        }
+    }
     // levels 1 and 2: ladders. On a ladder there is no gravity and up/down climb.
     if (level == 1 || level == 2) {
-        if (onLadder()) {
+        if (riding) {
+            duck.ay = 0
+        } else if (onLadder()) {
             duck.ay = 0
             // while climbing, line the duck up inside the ladder so it fits through the hole
             if (controller.up.isPressed() || controller.down.isPressed()) {
@@ -426,6 +477,10 @@ let platform: Sprite = null
 let key: Sprite = null
 let hasKey = false
 let lastOnPlatform = 0
+let riding = false
+let platformLook: Image = null
+let ridePlatform: Sprite = null
+let rideLastX = 0
 let platformTurnTime = 0
 let spikeHits = 0
 let bossDirection = 0
