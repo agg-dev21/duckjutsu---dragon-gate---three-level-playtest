@@ -30,8 +30,8 @@ function makePlatform (x: number, y: number, vx: number, vy: number) {
     platform.vx = vx
     platform.vy = vy
     platform.setFlag(SpriteFlag.GhostThroughWalls, true)
-    // each platform turns around 2 seconds after it starts, then every 2 seconds
-    sprites.setDataNumber(platform, "turnTime", game.runtime() + 2000)
+    // platforms turn around 2 seconds after they are made, then every 2 seconds
+    platformTurnTime = game.runtime() + 2000
 }
 // is the duck on a ladder? (ladder tile where it is, or right under its feet)
 function onLadder () {
@@ -151,13 +151,14 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Platform, function (sprite, othe
         lastOnPlatform = game.runtime()
     }
 })
-// platforms turn around on their own 2 second timer, so they always stay on their path
+// every 2 seconds (counted from when the level's platforms were made) they turn around,
+// so they always stay on their path
 game.onUpdate(function () {
-    for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
-        if (game.runtime() > sprites.readDataNumber(onePlatform, "turnTime")) {
+    if (game.runtime() > platformTurnTime) {
+        platformTurnTime = game.runtime() + 2000
+        for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
             onePlatform.vx = 0 - onePlatform.vx
             onePlatform.vy = 0 - onePlatform.vy
-            sprites.setDataNumber(onePlatform, "turnTime", game.runtime() + 2000)
         }
     }
 })
@@ -416,6 +417,7 @@ let platform: Sprite = null
 let key: Sprite = null
 let hasKey = false
 let lastOnPlatform = 0
+let platformTurnTime = 0
 let spikeHits = 0
 let bossDirection = 0
 let egg: Sprite = null
