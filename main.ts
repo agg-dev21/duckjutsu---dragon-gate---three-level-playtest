@@ -30,6 +30,17 @@ function makePlatform (x: number, y: number, vx: number, vy: number) {
     platform.vx = vx
     platform.vy = vy
     platform.setFlag(SpriteFlag.GhostThroughWalls, true)
+    // each platform turns around 2 seconds after it starts, then every 2 seconds
+    sprites.setDataNumber(platform, "turnTime", game.runtime() + 2000)
+}
+// is the duck on a ladder? (ladder tile where it is, or right under its feet)
+function onLadder () {
+    for (let ladderTile of [assets.tile`myTile0`, assets.tile`myTile1`, assets.tile`myTile2`]) {
+        if (duck.tileKindAt(TileDirection.Center, ladderTile) || duck.tileKindAt(TileDirection.Bottom, ladderTile)) {
+            return true
+        }
+    }
+    return false
 }
 // ===== START MENU =====
 // up and down move the arrow
@@ -133,18 +144,21 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.NPC, function (sprite, otherSpri
 // ===== MOVING PLATFORMS =====
 // land on a platform from above and ride along with it
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Platform, function (sprite, otherSprite) {
-    if (sprite.vy >= otherSprite.vy && sprite.bottom < otherSprite.top + 8) {
+    if (sprite.vy >= otherSprite.vy && sprite.y < otherSprite.y) {
         sprite.bottom = otherSprite.top
         sprite.vy = otherSprite.vy
         sprite.x += otherSprite.vx / 30
         lastOnPlatform = game.runtime()
     }
 })
-// every 2 seconds the platforms turn around
-game.onUpdateInterval(2000, function () {
+// platforms turn around on their own 2 second timer, so they always stay on their path
+game.onUpdate(function () {
     for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
-        onePlatform.vx = 0 - onePlatform.vx
-        onePlatform.vy = 0 - onePlatform.vy
+        if (game.runtime() > sprites.readDataNumber(onePlatform, "turnTime")) {
+            onePlatform.vx = 0 - onePlatform.vx
+            onePlatform.vy = 0 - onePlatform.vy
+            sprites.setDataNumber(onePlatform, "turnTime", game.runtime() + 2000)
+        }
     }
 })
 // ===== GETTING HURT =====
@@ -311,20 +325,21 @@ game.onUpdate(function () {
     }
     // levels 1 and 2: ladders. On a ladder there is no gravity and up/down climb.
     if (level == 1 || level == 2) {
-        if (duck.tileKindAt(TileDirection.Center, assets.tile`myTile0`) || (duck.tileKindAt(TileDirection.Center, assets.tile`myTile1`) || duck.tileKindAt(TileDirection.Center, assets.tile`myTile2`))) {
+        if (onLadder()) {
             duck.ay = 0
-            duck.vy = 0
             // while climbing, line the duck up inside the ladder so it fits through the hole
             if (controller.up.isPressed() || controller.down.isPressed()) {
                 animation.stopAnimation(animation.AnimationTypes.All, duck)
                 duck.setImage(assets.image`duck0`)
-                duck.x = tiles.locationXY(tiles.locationOfSprite(duck), tiles.XY.x) + 1
+                duck.x = Math.floor(duck.x / 16) * 16 + 9
             }
             if (controller.up.isPressed()) {
                 duck.vy = 0 - climbSpeed
-            }
-            if (controller.down.isPressed()) {
+            } else if (controller.down.isPressed()) {
                 duck.vy = climbSpeed
+            } else if (duck.vy > -150) {
+                // hold still on the ladder (but let a jump keep going)
+                duck.vy = 0
             }
         } else {
             duck.ay = 600
