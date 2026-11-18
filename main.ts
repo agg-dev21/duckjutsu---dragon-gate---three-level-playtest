@@ -329,7 +329,7 @@ function startLevel3 () {
         . . 5 5 5 e e e e e 5 5 . . . . . . . .
         . . . . 5 5 e e e e 5 . . . . . . . . .
         . . . . . 5 5 e e e 5 . . . . . . . . .
-    `, 14)
+    `, 6)
     makeChicken(img`
         . . . . . f d d 2 2 2 2 . . . . . . . .
         . . . . . f f f d d 2 2 f . . . . . . .
@@ -351,7 +351,7 @@ function startLevel3 () {
         . . . f d d d d f f . . . . . . . . . .
         . . . f f f d d f f . . . . . . . . . .
         . . . . . f f f f . . . . . . . . . . .
-    `, 21)
+    `, 12)
     makeChicken(img`
         . . . . . a 9 9 a 4 4 4 a . . . . . . .
         . . . a a a a a 9 9 4 4 a a a . . . . .
@@ -373,7 +373,7 @@ function startLevel3 () {
         . . a a a e e e e e a a . . . . . . . .
         . . . . a a e e e e a . . . . . . . . .
         . . . . . a a e e e a . . . . . . . . .
-    `, 33)
+    `, 15)
     makeChicken(img`
         . . . . . f 4 4 f c c c f . . . . . . .
         . . . . . . f f 4 4 c c f f f . . . . .
@@ -395,7 +395,7 @@ function startLevel3 () {
         . . f f f 7 7 7 7 7 f f . . . . . . . .
         . . . . f f 7 7 7 7 f . . . . . . . . .
         . . . . . f f 7 7 7 f . . . . . . . . .
-    `, 37)
+    `, 21)
     game.splash("Level 3", "Upside down! Don't fall in the water")
 }
 // ===== HIT THE BOSS =====
