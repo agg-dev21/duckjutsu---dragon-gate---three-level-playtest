@@ -169,6 +169,15 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Fire, function (sprite, otherSpr
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
     hurt()
+    // level 2: the flying dragon gets knocked back so it doesn't keep hitting you
+    if (level == 2) {
+        if (otherSprite.x > sprite.x) {
+            otherSprite.x += 80
+        } else {
+            otherSprite.x += -80
+        }
+        otherSprite.y += -40
+    }
 })
 // out of lives: try the same level again
 info.onLifeZero(function () {
@@ -237,7 +246,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
         boss.setPosition(560, 40)
         boss.setFlag(SpriteFlag.GhostThroughWalls, true)
-        bossSpeed = 40
+        bossSpeed = 35
         boss.follow(duck, bossSpeed)
         bossHealth = 15
         game.splash("Level 2", "Climb ladders with up/down. B throws!")
@@ -381,8 +390,8 @@ game.onUpdateInterval(1500, function () {
             }
         }
     }
-    // level 2: the dragon throws a fireball at the duck
-    if (level == 2) {
+    // level 2: the dragon throws a fireball at the duck, but only when it is close
+    if (level == 2 && Math.abs(boss.x - duck.x) < 150 && Math.abs(boss.y - duck.y) < 100) {
         fireball = sprites.createProjectileFromSprite(assets.image`C1`, boss, -80, 0)
         if (duck.x > boss.x) {
             fireball.vx = 80
