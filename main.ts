@@ -214,10 +214,10 @@ function startLevel1 () {
         . . 4 4 4 4 . . . 4 . 4
         `, SpriteKind.Key)
     key.setPosition(200, 40)
-    // platforms that move up and down
+    game.splash("Level 1", "Jump on the rooftops!")
+    // platforms that move up and down (made after the message so their timer starts now)
     makePlatform(776, 140, 0, 30)
     makePlatform(536, 190, 0, -30)
-    game.splash("Level 1", "Jump on the rooftops!")
 }
 // ===== LEVEL 2: walk into the door =====
 scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, location) {
@@ -233,9 +233,6 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
         startSpot = tiles.getTileLocation(6, 25)
         tiles.placeOnTile(duck, startSpot)
-        // platforms that move left and right
-        makePlatform(120, 275, 60, 0)
-        makePlatform(420, 211, 50, 0)
         // the dragon flies around the tower and chases the duck
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
         boss.setPosition(560, 40)
@@ -244,6 +241,9 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         boss.follow(duck, bossSpeed)
         bossHealth = 15
         game.splash("Level 2", "Climb ladders with up/down. B throws!")
+        // platforms that move left and right
+        makePlatform(120, 275, 60, 0)
+        makePlatform(420, 211, 50, 0)
     }
 })
 // ===== LEVEL 3: upside down over the water =====
