@@ -150,14 +150,13 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Fire, function (sprite, otherSpr
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
     hurt()
-    // level 2: the flying dragon gets knocked back so it doesn't keep hitting you
+    // level 2: the flying dragon gets pushed back a little so it doesn't keep hitting you
     if (level == 2) {
         if (otherSprite.x > sprite.x) {
-            otherSprite.x += 80
+            otherSprite.x += 32
         } else {
-            otherSprite.x += -80
+            otherSprite.x += -32
         }
-        otherSprite.y += -40
     }
 })
 // out of lives: try the same level again
@@ -233,7 +232,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         sprites.destroyAllSpritesOfKind(SpriteKind.Platform)
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
-        startSpot = tiles.getTileLocation(10, 21)
+        startSpot = tiles.getTileLocation(2, 16)
         tiles.placeOnTile(duck, startSpot)
         // the dragon flies around the tower and chases the duck
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
@@ -266,7 +265,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
             . . . a a a a a 9 9 4 4 a a a . . . . .
             . . . . . a 9 9 a 4 4 4 a . . . . . . .
             `, SpriteKind.NPC)
-        npc.setPosition(136, 358)
+        npc.setPosition(58, 278)
         npc.sayText("Up/down climbs ladders. A jumps. B throws!", 4000, false)
         npc.lifespan = 5000
         // platforms that move left and right
@@ -326,10 +325,11 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     // the boss drops a heart
     if (bossHealth == 5) {
         heart = sprites.create(assets.image`heart`, SpriteKind.Heart)
+        // it appears right next to the duck so you can grab it
         if (level == 2) {
-            heart.setPosition(otherSprite.x, otherSprite.y - 40)
+            heart.setPosition(duck.x, duck.y - 24)
         } else {
-            heart.setPosition(otherSprite.x, otherSprite.y + 30)
+            heart.setPosition(duck.x, duck.y + 24)
         }
     }
     if (bossHealth == 0) {
