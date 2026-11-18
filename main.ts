@@ -528,7 +528,7 @@ arrow.setPosition(46, 59)
 
 // stop sliding: if no arrow is held, the duck stands still
 game.onUpdate(function () {
-    if (level > 0 \&\& !(controller.left.isPressed()) \&\& !(controller.right.isPressed())) {
+    if (level > 0 && !(controller.left.isPressed()) && !(controller.right.isPressed())) {
         duck.vx = 0
     }
 })
