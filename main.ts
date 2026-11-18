@@ -36,7 +36,15 @@ function onLadder () {
     }
     return false
 }
-// ===== START MENU =====
+// make a jumping chicken enemy on the ceiling of level 3
+function makeChicken (picture: Image, column: number) {
+    chicken = sprites.create(picture, SpriteKind.Chicken)
+    tiles.placeOnTile(chicken, tiles.getTileLocation(column, 2))
+    chicken.ay = -400
+    chicken.vx = 50
+    chicken.setBounceOnWall(true)
+}
+// ===== START MENU AND CONTROLS =====
 // up and down move the arrow
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     if (level == 0 && menuChoice > 0) {
@@ -81,7 +89,6 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         duck.vy = 0 - jumpPower
     }
 })
-// ===== CONTROLS =====
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     if (level > 0) {
         throwSpeed = -150
@@ -121,7 +128,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         music.pewPew.play()
     }
 })
-// ===== PICK-UPS =====
+// ===== PICK-UPS, GETTING HURT, HITTING ENEMIES =====
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Heart, function (sprite, otherSprite) {
     otherSprite.destroy()
     info.changeLifeBy(1)
@@ -132,19 +139,6 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Key, function (sprite, otherSpri
     duck.sayText("Got the key!", 1000, false)
     music.powerUp.play()
 })
-// ===== MOVING PLATFORMS =====
-// every 2 seconds (counted from when the level's platforms were made) they turn around,
-// so they always stay on their path
-game.onUpdate(function () {
-    if (game.runtime() > platformTurnTime) {
-        platformTurnTime = game.runtime() + 2000
-        for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
-            onePlatform.vx = 0 - onePlatform.vx
-            onePlatform.vy = 0 - onePlatform.vy
-        }
-    }
-})
-// ===== GETTING HURT =====
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Fire, function (sprite, otherSprite) {
     otherSprite.destroy()
     hurt()
@@ -160,13 +154,57 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         }
     }
 })
+// jumping chickens: touching one hurts, a shuriken defeats it
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Chicken, function (sprite, otherSprite) {
+    hurt()
+})
+// shurikens hurt the boss
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
+    sprite.destroy()
+    bossHealth += -1
+    otherSprite.startEffect(effects.fire, 200)
+    music.smallCrash.play()
+    // under half health: the boss gets angry and faster
+    if (bossHealth == 7) {
+        bossSpeed = bossSpeed + 20
+        otherSprite.sayText("GRR!", 1000, false)
+        if (level == 2) {
+            boss.follow(duck, bossSpeed)
+        }
+    }
+    // the boss drops a heart
+    if (bossHealth == 5) {
+        heart = sprites.create(assets.image`heart`, SpriteKind.Heart)
+        // it appears right next to the duck so you can grab it
+        if (level == 2) {
+            heart.setPosition(duck.x, duck.y - 24)
+        } else {
+            heart.setPosition(duck.x, duck.y + 24)
+        }
+    }
+    if (bossHealth == 0) {
+        otherSprite.destroy()
+        if (level == 2) {
+            startLevel3()
+        } else {
+            game.splash("You saved the village!")
+            game.over(true)
+        }
+    }
+})
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Chicken, function (sprite, otherSprite) {
+    sprite.destroy()
+    otherSprite.destroy(effects.disintegrate, 200)
+    music.smallCrash.play()
+})
 // out of lives: try the same level again
 info.onLifeZero(function () {
     game.splash("Try again!")
     info.setLife(5)
     tiles.placeOnTile(duck, startSpot)
 })
-// ===== LEVEL 1: rooftops =====
+// ===== LEVELS =====
+// level 1: rooftops
 function startLevel1 () {
     arrow.destroy()
     // game music (loops for the whole game)
@@ -221,7 +259,7 @@ function startLevel1 () {
     makePlatform(platformLook, 776, 140, 0, 30)
     makePlatform(platformLook, 536, 190, 0, -30)
 }
-// ===== LEVEL 2: walk into the door =====
+// level 2: walk into the door
 scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, location) {
     if (level == 1 && !(hasKey)) {
         duck.sayText("I need the key!", 500, false)
@@ -286,7 +324,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         makePlatform(platformLook, 420, 211, 50, 0)
     }
 })
-// ===== LEVEL 3: upside down over the water =====
+// level 3: upside down over the water
 function startLevel3 () {
     level = 3
     // fresh hearts for the last level
@@ -400,42 +438,16 @@ function startLevel3 () {
     `, 21)
     game.splash("Level 3", "Upside down! Don't fall in the water")
 }
-// ===== HIT THE BOSS =====
-sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
-    sprite.destroy()
-    bossHealth += -1
-    otherSprite.startEffect(effects.fire, 200)
-    music.smallCrash.play()
-    // under half health: the boss gets angry and faster
-    if (bossHealth == 7) {
-        bossSpeed = bossSpeed + 20
-        otherSprite.sayText("GRR!", 1000, false)
-        if (level == 2) {
-            boss.follow(duck, bossSpeed)
-        }
-    }
-    // the boss drops a heart
-    if (bossHealth == 5) {
-        heart = sprites.create(assets.image`heart`, SpriteKind.Heart)
-        // it appears right next to the duck so you can grab it
-        if (level == 2) {
-            heart.setPosition(duck.x, duck.y - 24)
-        } else {
-            heart.setPosition(duck.x, duck.y + 24)
-        }
-    }
-    if (bossHealth == 0) {
-        otherSprite.destroy()
-        if (level == 2) {
-            startLevel3()
-        } else {
-            game.splash("You saved the village!")
-            game.over(true)
-        }
-    }
-})
 // ===== EVERY FRAME =====
 game.onUpdate(function () {
+    // moving platforms turn around every 2 seconds
+    if (game.runtime() > platformTurnTime) {
+        platformTurnTime = game.runtime() + 2000
+        for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
+            onePlatform.vx = 0 - onePlatform.vx
+            onePlatform.vy = 0 - onePlatform.vy
+        }
+    }
     // levels 1 and 2: standing on spikes hurts and bounces you up
     if (level == 1 || level == 2) {
         if (duck.isHittingTile(CollisionDirection.Bottom) && duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
@@ -457,12 +469,14 @@ game.onUpdate(function () {
     // If the duck's feet are on top of a platform, stick it there and move it along.
     riding = false
     if (level == 1 || level == 2) {
+        platformNumber = 0
         for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
+            platformNumber += 1
             if (duck.right > onePlatform.left + 2 && duck.left < onePlatform.right - 2 && duck.bottom >= onePlatform.top - 6 && duck.bottom <= onePlatform.top + 8 && duck.vy >= onePlatform.vy - 5) {
-                if (ridePlatform == onePlatform) {
+                if (rideNumber == platformNumber) {
                     duck.x += onePlatform.x - rideLastX
                 }
-                ridePlatform = onePlatform
+                rideNumber = platformNumber
                 rideLastX = onePlatform.x
                 duck.bottom = onePlatform.top
                 duck.vy = onePlatform.vy
@@ -471,7 +485,7 @@ game.onUpdate(function () {
             }
         }
         if (!(riding)) {
-            ridePlatform = null
+            rideNumber = 0
         }
     }
     // levels 1 and 2: ladders. On a ladder there is no gravity and up/down climb.
@@ -513,6 +527,18 @@ game.onUpdate(function () {
         if (duck.y > 90) {
             info.changeLifeBy(-1)
             tiles.placeOnTile(duck, startSpot)
+        }
+    }
+    // stop sliding: if no arrow is held, the duck stands still
+    if (level > 0 && !(controller.left.isPressed()) && !(controller.right.isPressed())) {
+        duck.vx = 0
+    }
+    // level 3: the chickens keep jumping down from the ceiling
+    if (level == 3) {
+        for (let oneChicken of sprites.allOfKind(SpriteKind.Chicken)) {
+            if (oneChicken.isHittingTile(CollisionDirection.Top)) {
+                oneChicken.vy = 200
+            }
         }
     }
 })
@@ -571,7 +597,6 @@ let hasKey = false
 let lastOnPlatform = 0
 let riding = false
 let platformLook: Image = null
-let ridePlatform: Sprite = null
 let rideLastX = 0
 let platformTurnTime = 0
 let spikeHits = 0
@@ -597,8 +622,10 @@ let level = 0
 let walkSpeed = 0
 let jumpPower = 0
 let climbSpeed = 0
+let chicken: Sprite = null
+let rideNumber = 0
+let platformNumber = 0
 // ===== GAME STARTS HERE: show the start menu =====
-// how the duck moves: change these to tune the controls
 walkSpeed = 95
 jumpPower = 290
 climbSpeed = 85
@@ -606,7 +633,6 @@ level = 0
 menuChoice = 0
 soundOn = true
 scene.setBackgroundImage(assets.image`start menu`)
-// menu music
 music.play(music.createSong(assets.song`waiting lol`), music.PlaybackMode.LoopingInBackground)
 arrow = sprites.create(img`
     4 4 . . . .
@@ -617,38 +643,3 @@ arrow = sprites.create(img`
     4 4 . . . .
     `, SpriteKind.Menu)
 arrow.setPosition(46, 59)
-
-// stop sliding: if no arrow is held, the duck stands still
-game.onUpdate(function () {
-    if (level > 0 && !(controller.left.isPressed()) && !(controller.right.isPressed())) {
-        duck.vx = 0
-    }
-})
-// make a jumping chicken enemy on the ceiling of level 3
-function makeChicken (picture: Image, column: number) {
-    chicken = sprites.create(picture, SpriteKind.Chicken)
-    tiles.placeOnTile(chicken, tiles.getTileLocation(column, 2))
-    chicken.ay = -400
-    chicken.vx = 50
-    chicken.setBounceOnWall(true)
-}
-// jumping chickens: touching one hurts, a shuriken defeats it
-sprites.onOverlap(SpriteKind.Player, SpriteKind.Chicken, function (sprite, otherSprite) {
-    hurt()
-})
-sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Chicken, function (sprite, otherSprite) {
-    sprite.destroy()
-    otherSprite.destroy(effects.disintegrate, 200)
-    music.smallCrash.play()
-})
-// the chickens keep jumping down from the ceiling
-game.onUpdate(function () {
-    if (level == 3) {
-        for (let oneChicken of sprites.allOfKind(SpriteKind.Chicken)) {
-            if (oneChicken.isHittingTile(CollisionDirection.Top)) {
-                oneChicken.vy = 200
-            }
-        }
-    }
-})
-let chicken: Sprite = null
