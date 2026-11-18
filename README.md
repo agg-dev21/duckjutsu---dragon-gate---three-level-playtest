@@ -18,6 +18,9 @@ Controls: arrows move, **A / Space** jumps, **B / X** throws a shuriken. Running
 
 Everything below is done in the MakeCode editor, in **Blocks** and the **Assets** tab.
 
+### Tuning the controls
+At the bottom of the code (on start) there are three numbers: `walkSpeed` (side speed), `jumpPower` (how high the duck jumps) and `climbSpeed` (ladder speed). Change them to make the duck feel right for your maps.
+
 ### Where things are
 | Thing | Where to change it |
 |---|---|

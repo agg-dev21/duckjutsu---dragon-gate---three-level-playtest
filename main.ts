@@ -55,7 +55,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
             duck.vy = 200
         }
     } else if (duck.isHittingTile(CollisionDirection.Bottom) || duck.vy == 0) {
-        duck.vy = -260
+        duck.vy = 0 - jumpPower
     }
 })
 // ===== CONTROLS =====
@@ -136,7 +136,7 @@ function startLevel1 () {
         tiles.setTileAt(spot, assets.tile`transparency16`)
     }
     duck = sprites.create(assets.image`duck0`, SpriteKind.Player)
-    controller.moveSprite(duck, 80, 0)
+    controller.moveSprite(duck, walkSpeed, 0)
     duck.ay = 600
     scene.cameraFollowSprite(duck)
     startSpot = tiles.getTileLocation(1, 11)
@@ -233,10 +233,10 @@ game.onUpdate(function () {
             duck.ay = 0
             duck.vy = 0
             if (controller.up.isPressed()) {
-                duck.vy = -70
+                duck.vy = 0 - climbSpeed
             }
             if (controller.down.isPressed()) {
-                duck.vy = 70
+                duck.vy = climbSpeed
             }
         } else {
             duck.ay = 600
@@ -327,7 +327,14 @@ let soundOn = false
 let arrow: Sprite = null
 let menuChoice = 0
 let level = 0
+let walkSpeed = 0
+let jumpPower = 0
+let climbSpeed = 0
 // ===== GAME STARTS HERE: show the start menu =====
+// how the duck moves: change these to tune the controls
+walkSpeed = 95
+jumpPower = 290
+climbSpeed = 85
 level = 0
 menuChoice = 0
 soundOn = true
