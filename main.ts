@@ -314,6 +314,12 @@ game.onUpdate(function () {
         if (duck.tileKindAt(TileDirection.Center, assets.tile`myTile0`) || (duck.tileKindAt(TileDirection.Center, assets.tile`myTile1`) || duck.tileKindAt(TileDirection.Center, assets.tile`myTile2`))) {
             duck.ay = 0
             duck.vy = 0
+            // while climbing, line the duck up inside the ladder so it fits through the hole
+            if (controller.up.isPressed() || controller.down.isPressed()) {
+                animation.stopAnimation(animation.AnimationTypes.All, duck)
+                duck.setImage(assets.image`duck0`)
+                duck.x = tiles.locationXY(tiles.locationOfSprite(duck), tiles.XY.x) + 1
+            }
             if (controller.up.isPressed()) {
                 duck.vy = 0 - climbSpeed
             }
