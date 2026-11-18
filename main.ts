@@ -6,15 +6,40 @@ namespace SpriteKind {
     export const Platform = SpriteKind.create()
     export const Key = SpriteKind.create()
     export const NPC = SpriteKind.create()
+    export const Look = SpriteKind.create()
 }
+// ===== HOW THE DUCK WORKS =====
+// "duck" is an invisible box that does all the moving, jumping and bumping into walls.
+// "duckLook" is the animated duck picture, and it just follows the box every frame.
+// The box never changes size, so the animation can't push the duck into walls or ladders.
 // ===== HELPERS =====
-// lose a life, then 1 second where you can't be hurt again
+// lose a life, bounce a little, then a moment where you can't be hurt again
 function hurt () {
     if (game.runtime() > safeTime) {
         info.changeLifeBy(-1)
-        safeTime = game.runtime() + 1000
+        safeTime = game.runtime() + 1200
         scene.cameraShake(2, 200)
+        if (level == 3) {
+            duck.vy = 150
+        } else {
+            duck.vy = -150
+        }
     }
+}
+// put the duck back at the start spot (or the checkpoint)
+function respawn () {
+    sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
+    tiles.placeOnTile(duck, startSpot)
+    // stand on the floor (or the ceiling in level 3) instead of inside it
+    if (level == 3) {
+        duck.y += 2
+    } else {
+        duck.y += -2
+    }
+    duck.vx = 0
+    duck.vy = 0
+    safeTime = game.runtime() + 1500
+    jumpPressedTime = 0
 }
 // make a moving platform (with this level's picture) at x, y with a speed (vx sideways, vy up/down)
 function makePlatform (picture: Image, x: number, y: number, vx: number, vy: number) {
@@ -34,6 +59,30 @@ function onLadder () {
         }
     }
     return false
+}
+// change the duck picture only when what it is doing changes
+// (0 = standing, 1 = walking, 2 = in the air, 3 = climbing)
+function setLook (newLook: number) {
+    if (newLook != lookNow || facing != lookFacing) {
+        lookNow = newLook
+        lookFacing = facing
+        if (newLook == 1) {
+            if (facing == 1) {
+                animation.runImageAnimation(duckLook, walkRight, 90, true)
+            } else {
+                animation.runImageAnimation(duckLook, walkLeft, 90, true)
+            }
+        } else {
+            animation.stopAnimation(animation.AnimationTypes.All, duckLook)
+            if (newLook == 3) {
+                duckLook.setImage(assets.image`duck0`)
+            } else if (facing == 1) {
+                duckLook.setImage(walkRight[newLook])
+            } else {
+                duckLook.setImage(walkLeft[newLook])
+            }
+        }
+    }
 }
 // ===== START MENU =====
 // up and down move the arrow
@@ -70,53 +119,25 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
             game.splash("Thanks for playing!")
             game.over(false)
         }
-    } else if (level == 3) {
-        // level 3: the duck stands on the ceiling, so it jumps down
-        // (vy is 0 when standing still, which catches the times the tile check misses)
-        if (duck.isHittingTile(CollisionDirection.Top) || duck.vy == 0) {
-            duck.vy = 200
-        }
-    } else if (duck.isHittingTile(CollisionDirection.Bottom) || duck.vy == 0 || game.runtime() - lastOnPlatform < 150) {
-        duck.vy = 0 - jumpPower
+    } else {
+        // remember when A was pressed. The jump happens in "every frame" as soon as the duck
+        // is standing, so pressing A a moment early or late still jumps.
+        jumpPressedTime = game.runtime()
     }
 })
-// ===== CONTROLS =====
-controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (level > 0) {
-        throwSpeed = -150
-        animation.runImageAnimation(duck, walkLeft, 100, true)
+// let go of A early for a small hop
+controller.A.onEvent(ControllerButtonEvent.Released, function () {
+    if ((level == 1 || level == 2) && duck.vy < -100) {
+        duck.vy = duck.vy / 2
     }
 })
-controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (level > 0) {
-        throwSpeed = 150
-        animation.runImageAnimation(duck, walkRight, 100, true)
-    }
-})
-// let go of an arrow: keep walking the other way, or stand still
-controller.left.onEvent(ControllerButtonEvent.Released, function () {
-    if (level > 0) {
-        if (controller.right.isPressed()) {
-            animation.runImageAnimation(duck, walkRight, 100, true)
-        } else {
-            animation.stopAnimation(animation.AnimationTypes.All, duck)
-        }
-    }
-})
-controller.right.onEvent(ControllerButtonEvent.Released, function () {
-    if (level > 0) {
-        if (controller.left.isPressed()) {
-            animation.runImageAnimation(duck, walkLeft, 100, true)
-        } else {
-            animation.stopAnimation(animation.AnimationTypes.All, duck)
-        }
-    }
-})
-// B throws a shuriken (only in the boss levels)
+// B throws a shuriken (only in the boss levels, a few per second)
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (level >= 2) {
-        shuriken = sprites.createProjectileFromSprite(assets.image`Random`, duck, throwSpeed, 0)
+    if (level >= 2 && game.runtime() > lastThrow + 250) {
+        lastThrow = game.runtime()
+        shuriken = sprites.createProjectileFromSprite(assets.image`Random`, duck, 150 * facing, 0)
         shuriken.setFlag(SpriteFlag.GhostThroughWalls, true)
+        shuriken.lifespan = 1200
         music.pewPew.play()
     }
 })
@@ -124,11 +145,12 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Heart, function (sprite, otherSprite) {
     otherSprite.destroy()
     info.changeLifeBy(1)
+    music.powerUp.play()
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Key, function (sprite, otherSprite) {
     otherSprite.destroy()
     hasKey = true
-    duck.sayText("Got the key!", 1000, false)
+    duckLook.sayText("Got the key!", 1000, false)
     music.powerUp.play()
 })
 // ===== MOVING PLATFORMS =====
@@ -159,11 +181,23 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         }
     }
 })
-// out of lives: try the same level again
+// out of lives: try the same level again (from the checkpoint if you reached it)
 info.onLifeZero(function () {
     game.splash("Try again!")
     info.setLife(5)
-    tiles.placeOnTile(duck, startSpot)
+    respawn()
+    // the boss gets its health back
+    if (level == 2) {
+        bossHealth = 15
+        bossSpeed = 35
+        boss.setPosition(560, 40)
+        boss.follow(duck, bossSpeed)
+    }
+    if (level == 3) {
+        bossHealth = 15
+        bossSpeed = 55
+        tiles.placeOnTile(boss, tiles.getTileLocation(24, 2))
+    }
 })
 // ===== LEVEL 1: rooftops =====
 function startLevel1 () {
@@ -173,7 +207,8 @@ function startLevel1 () {
     music.play(music.createSong(assets.song`drums 0`), music.PlaybackMode.LoopingInBackground)
     level = 1
     info.setLife(5)
-    throwSpeed = 150
+    facing = 1
+    lookNow = -1
     walkLeft = assets.animation`duck walk left`
     walkRight = assets.animation`duck walk right`
     scene.setBackgroundImage(assets.image`level 1 background`)
@@ -186,12 +221,38 @@ function startLevel1 () {
         cannon.ay = 300
         tiles.setTileAt(spot, assets.tile`transparency16`)
     }
-    duck = sprites.create(assets.image`duck0`, SpriteKind.Player)
+    // the invisible box that moves (14 wide, 20 tall)
+    duck = sprites.create(img`
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        `, SpriteKind.Player)
+    duck.setFlag(SpriteFlag.Invisible, true)
+    // the duck picture you see
+    duckLook = sprites.create(assets.image`duck0`, SpriteKind.Look)
+    duckLook.setFlag(SpriteFlag.Ghost, true)
     controller.moveSprite(duck, walkSpeed, 0)
     duck.ay = 600
     scene.cameraFollowSprite(duck)
     startSpot = tiles.getTileLocation(1, 11)
-    tiles.placeOnTile(duck, startSpot)
+    respawn()
     // the key is on the top beam. You need it to open the door.
     hasKey = false
     key = sprites.create(img`
@@ -201,40 +262,50 @@ function startLevel1 () {
         4 2 . . . . 2 4 4 4 4 4
         . 4 2 . . 2 4 . . 4 . 4
         . . 4 4 4 4 . . . 4 . 4
-        `, SpriteKind.Key)
+    `, SpriteKind.Key)
     key.setPosition(200, 40)
     game.splash("Level 1", "Jump on the rooftops!")
     // platforms that move up and down (made after the message so their timer starts now)
     platformLook = img`
-        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
-        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
-        e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
-        3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e
-        e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3
-        3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e
-        e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3
-        3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3
-        3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5
-        3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-        `
+        . . . . . a a e e e a . . . . . . . . .
+        . . . . a a e e e e a . . . . . . . . .
+        . . a a a e e e e e a a . . . . . . . .
+        . . a 2 2 c 4 4 4 4 4 a . . . . . . . .
+        . a a 2 2 c c c c 4 4 a . . . . . . . .
+        . a 2 2 2 c 5 1 c 4 4 a . . a a a . . .
+        . a 2 2 c c 5 5 c 4 4 a . . a 4 a a a .
+        a 4 4 4 c c 5 5 c 4 4 a . . a 4 4 4 a a
+        a 4 4 3 c c c c c c c a . . . a 4 4 4 a
+        . a e e e c c c c c c a a a a 4 4 4 2 a
+        . e e e c c c c c c 2 2 4 4 4 4 2 2 2 a
+        . a c c c c c c c c c 2 a a 4 2 2 2 a a
+        a c c c c c c c c c c c c a a a 2 a a a
+        a c c 2 c 2 2 c a c c c c c c a 2 2 2 a
+        a c 2 2 2 2 2 2 a a c c c c a a 2 2 a a
+        a 2 c 2 2 2 2 2 2 a a a a a a 2 2 a a .
+        a a 2 2 2 2 2 2 2 2 2 2 2 2 2 2 a a . .
+        . a a 2 2 2 2 2 a a 2 a 2 2 a a a . . .
+        . . . a a a a a 9 9 4 4 a a a . . . . .
+        . . . . . a 9 9 a 4 4 4 a . . . . . . .
+    `
     makePlatform(platformLook, 776, 140, 0, 30)
     makePlatform(platformLook, 536, 190, 0, -30)
 }
 // ===== LEVEL 2: walk into the door =====
 scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, location) {
-    if (level == 1 && !(hasKey)) {
-        duck.sayText("I need the key!", 500, false)
+    if (level == 1 && !(hasKey) && game.runtime() > doorMessageTime) {
+        doorMessageTime = game.runtime() + 1500
+        duckLook.sayText("I need the key!", 1000, false)
     }
     if (level == 1 && hasKey) {
         level = 2
-        sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
         sprites.destroyAllSpritesOfKind(SpriteKind.Cannon)
         sprites.destroyAllSpritesOfKind(SpriteKind.Platform)
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
         startSpot = tiles.getTileLocation(2, 16)
         checkpointReached = false
-        tiles.placeOnTile(duck, startSpot)
+        respawn()
         // the dragon flies around the tower and chases the duck
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
         boss.setPosition(560, 40)
@@ -243,29 +314,20 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         boss.follow(duck, bossSpeed)
         bossHealth = 15
         game.splash("Level 2", "Climb the tower and beat the dragon!")
+        safeTime = game.runtime() + 1500
         // a friendly chicken next to you explains the buttons, then leaves
         npc = sprites.create(img`
-            . . . . . a a e e e a . . . . . . . . .
-            . . . . a a e e e e a . . . . . . . . .
-            . . a a a e e e e e a a . . . . . . . .
-            . . a 2 2 c 4 4 4 4 4 a . . . . . . . .
-            . a a 2 2 c c c c 4 4 a . . . . . . . .
-            . a 2 2 2 c 5 1 c 4 4 a . . a a a . . .
-            . a 2 2 c c 5 5 c 4 4 a . . a 4 a a a .
-            a 4 4 4 c c 5 5 c 4 4 a . . a 4 4 4 a a
-            a 4 4 3 c c c c c c c a . . . a 4 4 4 a
-            . a e e e c c c c c c a a a a 4 4 4 2 a
-            . e e e c c c c c c 2 2 4 4 4 4 2 2 2 a
-            . a c c c c c c c c c 2 a a 4 2 2 2 a a
-            a c c c c c c c c c c c c a a a 2 a a a
-            a c c 2 c 2 2 c a c c c c c c a 2 2 2 a
-            a c 2 2 2 2 2 2 a a c c c c a a 2 2 a a
-            a 2 c 2 2 2 2 2 2 a a a a a a 2 2 a a .
-            a a 2 2 2 2 2 2 2 2 2 2 2 2 2 2 a a . .
-            . a a 2 2 2 2 2 a a 2 a 2 2 a a a . . .
-            . . . a a a a a 9 9 4 4 a a a . . . . .
-            . . . . . a 9 9 a 4 4 4 a . . . . . . .
-            `, SpriteKind.NPC)
+            e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+            e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+            e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+            3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e
+            e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3
+            3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e
+            e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3 e e 3 3
+            3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3 3 3 e 3
+            3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5 3 3 3 5
+            3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+        `, SpriteKind.NPC)
         npc.setPosition(58, 278)
         npc.sayText("Up/down climbs ladders. A jumps. B throws!", 4000, false)
         npc.lifespan = 5000
@@ -281,7 +343,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
             8 6 8 8 8 8 8 8 8 8 8 8 8 8 6 b 8 6 8 8 8 8 8 8 8 8 8 8 8 8 6 b
             8 8 6 8 8 8 8 8 6 b b b 8 8 6 b 8 8 6 8 8 8 8 8 6 b b b 8 8 6 b
             b 8 8 8 b b 8 8 8 8 8 8 8 8 b b b 8 8 8 b b 8 8 8 8 8 8 8 8 b b
-            `
+        `
         makePlatform(platformLook, 120, 275, 60, 0)
         makePlatform(platformLook, 420, 211, 50, 0)
     }
@@ -289,18 +351,18 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
 // ===== LEVEL 3: upside down over the water =====
 function startLevel3 () {
     level = 3
-    sprites.destroyAllSpritesOfKind(SpriteKind.Fire)
     sprites.destroyAllSpritesOfKind(SpriteKind.Heart)
     sprites.destroyAllSpritesOfKind(SpriteKind.Platform)
+    sprites.destroyAllSpritesOfKind(SpriteKind.NPC)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Projectile)
     scene.setBackgroundImage(assets.image`level 3 background`)
     tiles.setCurrentTilemap(tilemap`level 3 flooded gate`)
     startSpot = tiles.getTileLocation(2, 2)
-    tiles.placeOnTile(duck, startSpot)
     duck.ay = -600
+    respawn()
     walkLeft = assets.animation`duck walk left upside down`
     walkRight = assets.animation`duck walk right upside down`
-    animation.stopAnimation(animation.AnimationTypes.All, duck)
-    duck.setImage(walkRight[0])
+    lookNow = -1
     boss = sprites.create(assets.image`chicken boss`, SpriteKind.Enemy)
     tiles.placeOnTile(boss, tiles.getTileLocation(24, 2))
     boss.ay = -400
@@ -308,6 +370,7 @@ function startLevel3 () {
     bossDirection = 1
     bossHealth = 15
     game.splash("Level 3", "Upside down! Don't fall in the water")
+    safeTime = game.runtime() + 1500
 }
 // ===== HIT THE BOSS =====
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
@@ -347,109 +410,160 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
 })
 // ===== EVERY FRAME =====
 game.onUpdate(function () {
-    // the duck blinks while it can't be hurt
     if (level > 0) {
-        duck.setFlag(SpriteFlag.Invisible, game.runtime() < safeTime && Math.floor(game.runtime() / 100) % 2 == 0)
-    }
-    // level 2 checkpoint: once you reach the top of the tower, you restart up there
-    if (level == 2 && !(checkpointReached) && duck.y < 120) {
-        checkpointReached = true
-        startSpot = tiles.getTileLocation(2, 4)
-        duck.sayText("Checkpoint!", 1000, false)
-        music.baDing.play()
-    }
-    // levels 1 and 2: standing on spikes hurts and bounces you up
-    if (level == 1 || level == 2) {
-        if (duck.isHittingTile(CollisionDirection.Bottom) && duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
-            if (game.runtime() > safeTime) {
-                // spikes take half a heart: every 2nd spike hit loses a heart
-                spikeHits += 1
-                safeTime = game.runtime() + 1000
-                scene.cameraShake(2, 200)
-                duck.sayText("Ouch!", 500, false)
-                if (spikeHits == 2) {
-                    spikeHits = 0
-                    info.changeLifeBy(-1)
+        // which way the duck faces
+        if (controller.right.isPressed()) {
+            facing = 1
+        } else if (controller.left.isPressed()) {
+            facing = -1
+        }
+        // levels 1 and 2: standing on a moving platform.
+        // If the duck's feet are on top of a platform, stick it there and move it along.
+        riding = false
+        if (level == 1 || level == 2) {
+            platformNumber = 0
+            for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
+                platformNumber += 1
+                if (duck.right > onePlatform.left + 2 && duck.left < onePlatform.right - 2 && duck.bottom >= onePlatform.top - 6 && duck.bottom <= onePlatform.top + 8 && duck.vy >= onePlatform.vy - 5) {
+                    // carry the duck sideways with the platform (but never into a wall)
+                    if (rideNumber == platformNumber) {
+                        if (onePlatform.x > rideLastX && !(duck.isHittingTile(CollisionDirection.Right))) {
+                            duck.x += onePlatform.x - rideLastX
+                        }
+                        if (onePlatform.x < rideLastX && !(duck.isHittingTile(CollisionDirection.Left))) {
+                            duck.x += onePlatform.x - rideLastX
+                        }
+                    }
+                    rideNumber = platformNumber
+                    rideLastX = onePlatform.x
+                    // don't get squished into the ceiling: step off instead
+                    if (!(duck.isHittingTile(CollisionDirection.Top))) {
+                        duck.bottom = onePlatform.top
+                        duck.vy = onePlatform.vy
+                        riding = true
+                    }
                 }
             }
-            duck.vy = -200
+            if (!(riding)) {
+                rideNumber = 0
+            }
         }
-    }
-    // levels 1 and 2: standing on a moving platform.
-    // If the duck's feet are on top of a platform, stick it there and move it along.
-    riding = false
-    if (level == 1 || level == 2) {
-        platformNumber = 0
-        for (let onePlatform of sprites.allOfKind(SpriteKind.Platform)) {
-            platformNumber += 1
-            if (duck.right > onePlatform.left + 2 && duck.left < onePlatform.right - 2 && duck.bottom >= onePlatform.top - 6 && duck.bottom <= onePlatform.top + 8 && duck.vy >= onePlatform.vy - 5) {
-                if (rideNumber == platformNumber) {
-                    duck.x += onePlatform.x - rideLastX
+        // levels 1 and 2: ladders and gravity. On a ladder there is no gravity and up/down climb.
+        if (level == 1 || level == 2) {
+            if (riding) {
+                duck.ay = 0
+            } else if (onLadder() && duck.vy > -150) {
+                duck.ay = 0
+                if (controller.up.isPressed() || controller.down.isPressed()) {
+                    // line the duck up with the ladder so it fits through the hole
+                    duck.x = Math.floor(duck.x / 16) * 16 + 8
                 }
-                rideNumber = platformNumber
-                rideLastX = onePlatform.x
-                duck.bottom = onePlatform.top
-                duck.vy = onePlatform.vy
-                riding = true
-                lastOnPlatform = game.runtime()
+                if (controller.up.isPressed()) {
+                    duck.vy = 0 - climbSpeed
+                } else if (controller.down.isPressed()) {
+                    duck.vy = climbSpeed
+                } else {
+                    // hold still on the ladder
+                    duck.vy = 0
+                }
+            } else {
+                duck.ay = 600
             }
         }
-        if (!(riding)) {
-            rideNumber = 0
-        }
-    }
-    // levels 1 and 2: ladders. On a ladder there is no gravity and up/down climb.
-    if (level == 1 || level == 2) {
-        if (riding) {
-            duck.ay = 0
-        } else if (onLadder()) {
-            duck.ay = 0
-            // while climbing, line the duck up inside the ladder so it fits through the hole
-            if (controller.up.isPressed() || controller.down.isPressed()) {
-                animation.stopAnimation(animation.AnimationTypes.All, duck)
-                duck.setImage(assets.image`duck0`)
-                duck.x = Math.floor(duck.x / 16) * 16 + 9
+        // is the duck standing on something?
+        if (level == 3) {
+            if (duck.isHittingTile(CollisionDirection.Top)) {
+                lastGrounded = game.runtime()
             }
-            if (controller.up.isPressed()) {
-                duck.vy = 0 - climbSpeed
-            } else if (controller.down.isPressed()) {
-                duck.vy = climbSpeed
-            } else if (duck.vy > -150) {
-                // hold still on the ladder (but let a jump keep going)
-                duck.vy = 0
+        } else if (duck.isHittingTile(CollisionDirection.Bottom) || riding || onLadder()) {
+            lastGrounded = game.runtime()
+        }
+        // jump: A was pressed in the last 0.15 s and the duck was standing in the last 0.1 s
+        // (so you can still jump just after running off an edge)
+        if (game.runtime() - jumpPressedTime < 150 && game.runtime() - lastGrounded < 100) {
+            jumpPressedTime = 0
+            lastGrounded = 0
+            if (level == 3) {
+                duck.vy = 200
+            } else {
+                duck.vy = 0 - jumpPower
+                duck.ay = 600
             }
-        } else {
-            duck.ay = 600
         }
-    }
-    // level 3: the chicken turns around when it hits a wall
-    if (level == 3) {
-        if (boss.isHittingTile(CollisionDirection.Left)) {
-            bossDirection = 1
+        // levels 1 and 2: standing on spikes hurts and bounces you up
+        if (level == 1 || level == 2) {
+            if (duck.isHittingTile(CollisionDirection.Bottom) && duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
+                if (game.runtime() > safeTime) {
+                    // spikes take half a heart: every 2nd spike hit loses a heart
+                    spikeHits += 1
+                    safeTime = game.runtime() + 1000
+                    scene.cameraShake(2, 200)
+                    duckLook.sayText("Ouch!", 500, false)
+                    if (spikeHits == 2) {
+                        spikeHits = 0
+                        info.changeLifeBy(-1)
+                    }
+                }
+                duck.vy = -200
+            }
         }
-        if (boss.isHittingTile(CollisionDirection.Right)) {
-            bossDirection = -1
+        // level 2 checkpoint: once you reach the top of the tower, you restart up there
+        if (level == 2 && !(checkpointReached) && duck.y < 120) {
+            checkpointReached = true
+            startSpot = tiles.getTileLocation(2, 4)
+            duckLook.sayText("Checkpoint!", 1000, false)
+            music.baDing.play()
         }
-        boss.vx = bossSpeed * bossDirection
-    }
-    // level 3: falling into the water
-    if (level == 3) {
-        if (duck.y > 90) {
+        // level 3: the chicken turns around when it hits a wall
+        if (level == 3) {
+            if (boss.isHittingTile(CollisionDirection.Left)) {
+                bossDirection = 1
+            }
+            if (boss.isHittingTile(CollisionDirection.Right)) {
+                bossDirection = -1
+            }
+            boss.vx = bossSpeed * bossDirection
+        }
+        // level 3: falling into the water
+        if (level == 3 && duck.y > 90) {
             info.changeLifeBy(-1)
-            tiles.placeOnTile(duck, startSpot)
+            respawn()
         }
+        // pick the duck picture
+        if ((level == 1 || level == 2) && onLadder() && (controller.up.isPressed() || controller.down.isPressed())) {
+            setLook(3)
+        } else if (game.runtime() - lastGrounded > 80) {
+            setLook(2)
+        } else if (controller.left.isPressed() || controller.right.isPressed()) {
+            setLook(1)
+        } else {
+            setLook(0)
+        }
+        // the picture follows the invisible box (feet on the floor, or on the ceiling in level 3)
+        duckLook.x = duck.x
+        if (level == 3) {
+            duckLook.top = duck.top
+        } else {
+            duckLook.bottom = duck.bottom
+        }
+        // the duck blinks while it can't be hurt
+        duckLook.setFlag(SpriteFlag.Invisible, game.runtime() < safeTime && Math.floor(game.runtime() / 100) % 2 == 0)
     }
 })
 // ===== ENEMIES ATTACK =====
 game.onUpdateInterval(1500, function () {
-    // level 1: cannons near the duck shoot fireworks
+    // level 1: cannons near the duck shoot fireworks toward it
     if (level == 1) {
         for (let oneCannon of sprites.allOfKind(SpriteKind.Cannon)) {
             if (Math.abs(oneCannon.x - duck.x) < 150) {
                 animation.runImageAnimation(oneCannon, assets.animation`cannon fire`, 80, false)
                 firework = sprites.create(assets.image`C2`, SpriteKind.Fire)
-                firework.setPosition(oneCannon.x - 8, oneCannon.y)
-                firework.vx = -50
+                firework.setPosition(oneCannon.x, oneCannon.y - 4)
+                if (duck.x > oneCannon.x) {
+                    firework.vx = 50
+                } else {
+                    firework.vx = -50
+                }
                 firework.vy = -150
                 firework.ay = 200
                 firework.setFlag(SpriteFlag.GhostThroughWalls, true)
@@ -468,8 +582,8 @@ game.onUpdateInterval(1500, function () {
         fireball.setKind(SpriteKind.Fire)
         fireball.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
-    // level 3: the chicken throws an egg at the duck
-    if (level == 3) {
+    // level 3: the chicken throws an egg at the duck when it is close
+    if (level == 3 && Math.abs(boss.x - duck.x) < 160) {
         egg = sprites.createProjectileFromSprite(assets.image`C3`, boss, 80, 0)
         if (duck.x < boss.x) {
             egg.vx = -80
@@ -492,7 +606,6 @@ let npc: Sprite = null
 let platform: Sprite = null
 let key: Sprite = null
 let hasKey = false
-let lastOnPlatform = 0
 let riding = false
 let checkpointReached = false
 let platformLook: Image = null
@@ -514,7 +627,14 @@ let startSpot: tiles.Location = null
 let walkRight: Image[] = []
 let walkLeft: Image[] = []
 let duck: Sprite = null
-let throwSpeed = 0
+let duckLook: Sprite = null
+let facing = 1
+let lookNow = -1
+let lookFacing = 0
+let lastGrounded = 0
+let jumpPressedTime = 0
+let lastThrow = 0
+let doorMessageTime = 0
 let safeTime = 0
 let soundOn = false
 let arrow: Sprite = null
@@ -541,5 +661,5 @@ arrow = sprites.create(img`
     4 4 4 4 4 4
     4 4 4 4 . .
     4 4 . . . .
-    `, SpriteKind.Menu)
+`, SpriteKind.Menu)
 arrow.setPosition(46, 59)
