@@ -45,7 +45,7 @@ Open its tile map and paint. No code needed:
 * Paint **`cannon spot`** tiles in level 1 for more cannons. Each one becomes a `cannon` sprite when the level starts.
 * Leave holes in the floor for pits (falling in costs a life).
 * **Keep gaps at least 2 tiles tall.** The duck is 22px tall and a tile is 16px, so it gets wedged in a 1-tile-high gap.
-* The duck starts at column 1, row 11 (level 1), column 6, row 25 (level 2, bottom left of the tower) and column 2, row 2 (level 3).
+* The duck starts at column 1, row 11 (level 1), column 10, row 21 (level 2, on the ledge above the bottom-left pit) and column 2, row 2 (level 3).
 
 ### Add a new enemy (copy the boss pattern)
 1. Make or import its picture (see below).

@@ -231,7 +231,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`door`, function (sprite, loca
         sprites.destroyAllSpritesOfKind(SpriteKind.Platform)
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
-        startSpot = tiles.getTileLocation(6, 25)
+        startSpot = tiles.getTileLocation(10, 21)
         tiles.placeOnTile(duck, startSpot)
         // the dragon flies around the tower and chases the duck
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
