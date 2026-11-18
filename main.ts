@@ -52,7 +52,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         // level 3: the duck stands on the ceiling, so it jumps down
         // (vy is 0 when standing still, which catches the times the tile check misses)
         if (duck.isHittingTile(CollisionDirection.Top) || duck.vy == 0) {
-            duck.vy = 250
+            duck.vy = 200
         }
     } else if (duck.isHittingTile(CollisionDirection.Bottom) || duck.vy == 0) {
         duck.vy = -260
@@ -144,7 +144,7 @@ function startLevel1 () {
     controller.moveSprite(duck, 80, 0)
     duck.ay = 600
     scene.cameraFollowSprite(duck)
-    startSpot = tiles.getTileLocation(1, 5)
+    startSpot = tiles.getTileLocation(1, 11)
     tiles.placeOnTile(duck, startSpot)
     game.splash("Level 1", "Jump on the rooftops!")
 }
@@ -156,16 +156,16 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`gate0`, function (sprite, loc
         sprites.destroyAllSpritesOfKind(SpriteKind.Cannon)
         scene.setBackgroundImage(assets.image`level 2 background`)
         tiles.setCurrentTilemap(tilemap`level 2 dragon arena`)
-        startSpot = tiles.getTileLocation(2, 3)
+        startSpot = tiles.getTileLocation(6, 25)
         tiles.placeOnTile(duck, startSpot)
+        // the dragon flies around the tower and chases the duck
         boss = sprites.create(assets.image`dragon0`, SpriteKind.Enemy)
-        // the dragon walks over the hills and sometimes jumps
-        boss.setPosition(410, 50)
-        boss.ay = 500
-        bossSpeed = 45
-        bossDirection = -1
+        boss.setPosition(560, 40)
+        boss.setFlag(SpriteFlag.GhostThroughWalls, true)
+        bossSpeed = 30
+        boss.follow(duck, bossSpeed)
         bossHealth = 15
-        game.splash("Level 2", "The dragon climbs too! B throws!")
+        game.splash("Level 2", "Climb ladders with up/down. B throws!")
     }
 })
 // ===== LEVEL 3: upside down over the water =====
@@ -200,6 +200,9 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     if (bossHealth == 7) {
         bossSpeed = bossSpeed + 20
         otherSprite.sayText("GRR!", 1000, false)
+        if (level == 2) {
+            boss.follow(duck, bossSpeed)
+        }
     }
     // the boss drops a heart
     if (bossHealth == 5) {
@@ -222,27 +225,27 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
 })
 // ===== EVERY FRAME =====
 game.onUpdate(function () {
-    // level 1: standing on spikes hurts and bounces you up
-    if (level == 1) {
+    // levels 1 and 2: standing on spikes hurts and bounces you up
+    if (level == 1 || level == 2) {
         if (duck.isHittingTile(CollisionDirection.Bottom) && duck.tileKindAt(TileDirection.Bottom, assets.tile`spikes0`)) {
             hurt()
             duck.vy = -150
         }
     }
-    // level 2: the dragon jumps up onto hills it walks into,
-    // and turns around at the two ends of the arena
+    // level 2: ladders. On a ladder there is no gravity and up/down climb.
     if (level == 2) {
-        if (boss.isHittingTile(CollisionDirection.Bottom) && (boss.isHittingTile(CollisionDirection.Left) || boss.isHittingTile(CollisionDirection.Right))) {
-            boss.vy = -260
+        if (duck.tileKindAt(TileDirection.Center, assets.tile`myTile0`) || duck.tileKindAt(TileDirection.Center, assets.tile`myTile1`)) {
+            duck.ay = 0
+            duck.vy = 0
+            if (controller.up.isPressed()) {
+                duck.vy = -70
+            }
+            if (controller.down.isPressed()) {
+                duck.vy = 70
+            }
+        } else {
+            duck.ay = 600
         }
-        if (boss.x < 60) {
-            bossDirection = 1
-        }
-        if (boss.x > 580) {
-            bossDirection = -1
-        }
-        // keep walking (bumping a hill stops it, so set the speed every frame)
-        boss.vx = bossSpeed * bossDirection
     }
     // level 3: the chicken turns around when it hits a wall
     if (level == 3) {
@@ -301,13 +304,8 @@ game.onUpdateInterval(1500, function () {
         egg.setFlag(SpriteFlag.GhostThroughWalls, true)
     }
 })
-// every 3 seconds: the dragon jumps, the chicken dives down at you
+// every 3 seconds: the chicken dives down at you
 game.onUpdateInterval(3000, function () {
-    if (level == 2) {
-        if (boss.isHittingTile(CollisionDirection.Bottom)) {
-            boss.vy = -220
-        }
-    }
     if (level == 3) {
         if (boss.isHittingTile(CollisionDirection.Top)) {
             boss.vy = 200

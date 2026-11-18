@@ -3,7 +3,7 @@
 A 3-level ninja duck platformer made in MakeCode Arcade (Blocks).
 
 1. **Rooftops** - jump across the rooftops, dodge the cannon fireworks, grab coins, reach the gate.
-2. **Dragon Gate** - jump over the dragon and throw shurikens until it falls.
+2. **Dragon Gate** - climb the tower (ladders: hold up/down) while the flying dragon chases you; throw shurikens until it falls. Spikes on the floor hurt.
 3. **Flooded Gate** - you are upside down under a ceiling; beat the chicken boss and don't fall in the water.
 
 The game opens on a **start menu** (START / SETTINGS / QUIT). Up/down move the arrow, A picks. SETTINGS turns the sound on or off.
@@ -34,7 +34,7 @@ Open its tile map and paint. No code needed:
 * Paint **`cannon spot`** tiles in level 1 for more cannons. Each one becomes a `cannon` sprite when the level starts.
 * Leave holes in the floor for pits (falling in costs a life).
 * **Keep gaps at least 2 tiles tall.** The duck is 22px tall and a tile is 16px, so it gets wedged in a 1-tile-high gap.
-* The duck starts at column 1, row 5 (level 1), column 2, row 3 (level 2, above the left step) and column 2, row 2 (level 3). Those are the `startSpot` blocks; keep those tiles empty.
+* The duck starts at column 1, row 11 (level 1), column 6, row 25 (level 2, bottom left of the tower) and column 2, row 2 (level 3).
 
 ### Add a new enemy (copy the boss pattern)
 1. Make or import its picture (see below).
